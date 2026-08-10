@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { format, parseISO } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from 'lucide-react';
+import { parseISO } from 'date-fns';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { buildYearCalendar } from '../lib/optimizerEngine';
 import { LeaveOpportunity, CalendarDay } from '../types/holiday';
 
@@ -30,7 +29,6 @@ const MONTH_NAMES = [
 const WEEKDAY_SHORT = ['Pz', 'Pt', 'Sa', 'Çr', 'Pr', 'Cu', 'Ct'];
 
 export default function CalendarView({ year, selectedOpportunity }: CalendarViewProps) {
-  // Varsayılan olarak eğer seçili bir fırsat varsa o fırsatın ayına git
   const initialMonth = selectedOpportunity
     ? parseISO(selectedOpportunity.startDate).getMonth()
     : 0;
@@ -38,18 +36,13 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
   const [currentMonth, setCurrentMonth] = useState<number>(initialMonth);
 
   const fullCalendar = buildYearCalendar(year);
-
-  // Filtrelenmiş ay günleri
   const monthDays = fullCalendar.filter((d) => d.month === currentMonth);
 
-  // Ayın ilk gününün haftanın hangi günü olduğunu bul (0=Pazar, 1=Pazartesi, vb.)
   const firstDayOfMonth = new Date(year, currentMonth, 1);
-  const startDayOfWeek = firstDayOfMonth.getDay(); // 0-6
+  const startDayOfWeek = firstDayOfMonth.getDay();
 
-  // Takvimi hizalamak için boş hücreler
   const emptyPrefixSlots = Array.from({ length: startDayOfWeek });
 
-  // Seçili fırsatın kapsadığı tarih aralığı
   const isDateInOpportunityRange = (dateStr: string) => {
     if (!selectedOpportunity) return false;
     return dateStr >= selectedOpportunity.startDate && dateStr <= selectedOpportunity.endDate;
@@ -64,15 +57,15 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
   const prevMonth = () => setCurrentMonth((prev) => (prev === 0 ? 11 : prev - 1));
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl backdrop-blur-xl">
+    <div className="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-300">
       {/* Calendar Header & Month Navigation */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-sky-400" />
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <CalendarIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
             İnteraktif Takvim Görünümü
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {selectedOpportunity
               ? `Seçili Fırsat: ${selectedOpportunity.title}`
               : 'Bir fırsat kartına tıklayarak takvim üzerinde detaylı görün.'}
@@ -83,19 +76,19 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
         <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
           <button
             onClick={prevMonth}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/60"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700/60"
             title="Önceki Ay"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <span className="font-extrabold text-base text-white px-4 py-1.5 bg-slate-800/80 rounded-xl border border-slate-700/60 min-w-[130px] text-center">
+          <span className="font-extrabold text-base text-slate-900 dark:text-white px-4 py-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/60 min-w-[130px] text-center">
             {MONTH_NAMES[currentMonth]} {year}
           </span>
 
           <button
             onClick={nextMonth}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-all border border-slate-700/60"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700/60"
             title="Sonraki Ay"
           >
             <ChevronRight className="w-4 h-4" />
@@ -104,26 +97,26 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
       </div>
 
       {/* Color Legend Bar */}
-      <div className="flex flex-wrap items-center gap-3 p-3 bg-slate-950/60 rounded-2xl border border-slate-800/60 mb-6 text-xs font-medium">
+      <div className="flex flex-wrap items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200 dark:border-slate-800/60 mb-6 text-xs font-medium">
         <div className="flex items-center gap-1.5">
           <span className="w-3.5 h-3.5 rounded-md bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-          <span className="text-slate-300">Alınacak İzin</span>
+          <span className="text-slate-700 dark:text-slate-300">Alınacak İzin</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3.5 h-3.5 rounded-md bg-rose-500 shadow-sm shadow-rose-500/50"></span>
-          <span className="text-slate-300">Resmî / Dini Tatil</span>
+          <span className="text-slate-700 dark:text-slate-300">Resmî / Dini Tatil</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3.5 h-3.5 rounded-md bg-amber-500 shadow-sm shadow-amber-500/50"></span>
-          <span className="text-slate-300">Arefe (Yarım Gün)</span>
+          <span className="text-slate-700 dark:text-slate-300">Arefe (Yarım Gün)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-md bg-sky-900 border border-sky-600"></span>
-          <span className="text-slate-300">Hafta Sonu</span>
+          <span className="w-3.5 h-3.5 rounded-md bg-sky-100 dark:bg-sky-900 border border-sky-300 dark:border-sky-600"></span>
+          <span className="text-slate-700 dark:text-slate-300">Hafta Sonu</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-md bg-slate-800 border border-slate-700"></span>
-          <span className="text-slate-300">İş Günü</span>
+          <span className="w-3.5 h-3.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></span>
+          <span className="text-slate-700 dark:text-slate-300">İş Günü</span>
         </div>
       </div>
 
@@ -133,7 +126,7 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           <div
             key={i}
             className={`text-xs font-bold py-1.5 uppercase tracking-wider ${
-              i === 0 || i === 6 ? 'text-sky-400' : 'text-slate-400'
+              i === 0 || i === 6 ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'
             }`}
           >
             {wd}
@@ -145,7 +138,7 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {/* Empty slots before day 1 */}
         {emptyPrefixSlots.map((_, idx) => (
-          <div key={`empty-${idx}`} className="h-14 sm:h-16 rounded-xl bg-slate-950/20 opacity-30" />
+          <div key={`empty-${idx}`} className="h-14 sm:h-16 rounded-xl bg-slate-100 dark:bg-slate-950/20 opacity-30" />
         ))}
 
         {/* Days of month */}
@@ -153,8 +146,7 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           const inRange = isDateInOpportunityRange(day.date);
           const isLeave = isRecommendedLeaveDate(day.date);
 
-          // Stratejik renk sınıfları
-          let bgClass = 'bg-slate-800/40 text-slate-300 border-slate-800';
+          let bgClass = 'bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800';
           let badgeText = '';
 
           if (isLeave) {
@@ -163,17 +155,17 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
             badgeText = 'İzin';
           } else if (day.type === 'holiday') {
             bgClass =
-              'bg-gradient-to-br from-rose-600 to-red-700 text-white font-bold border-rose-500 shadow-md shadow-rose-600/20';
+              'bg-gradient-to-br from-rose-500 to-red-600 dark:from-rose-600 dark:to-red-700 text-white font-bold border-rose-400 dark:border-rose-500 shadow-md shadow-rose-600/20';
             badgeText = 'Tatil';
           } else if (day.type === 'half-day') {
             bgClass =
-              'bg-gradient-to-br from-amber-500 to-orange-600 text-slate-950 font-bold border-amber-400 shadow-md shadow-amber-500/20';
+              'bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 text-slate-950 font-bold border-amber-400 shadow-md shadow-amber-500/20';
             badgeText = 'Arefe';
           } else if (day.type === 'weekend') {
-            bgClass = 'bg-sky-950/60 text-sky-200 font-semibold border-sky-800/60';
+            bgClass = 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-200 font-semibold border-sky-200 dark:border-sky-800/60';
             badgeText = 'H.Sonu';
           } else if (inRange) {
-            bgClass = 'bg-sky-900/40 text-sky-200 border-sky-700/60 font-semibold';
+            bgClass = 'bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700/60 font-semibold';
           }
 
           return (

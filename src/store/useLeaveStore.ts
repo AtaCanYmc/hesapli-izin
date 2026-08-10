@@ -9,6 +9,7 @@ interface LeaveStoreState {
   includeFridayPenalty: boolean; // Cuma izni 2 gün sayılsın kuralı
   minBlockEnabled: boolean; // Minimum X gün kesintisiz blok izin kuralı
   minBlockDays: number; // Minimum kesintisiz blok gün hedefi (ör. 10 gün)
+  theme: 'dark' | 'light'; // Tema modu
   selectedOpportunityId: string | null;
   pinnedOpportunities: string[];
   
@@ -21,6 +22,8 @@ interface LeaveStoreState {
   toggleMinBlockEnabled: () => void;
   setMinBlockEnabled: (enabled: boolean) => void;
   setMinBlockDays: (days: number) => void;
+  toggleTheme: () => void;
+  setTheme: (theme: 'dark' | 'light') => void;
   setSelectedOpportunityId: (id: string | null) => void;
   togglePinOpportunity: (id: string) => void;
   resetAll: () => void;
@@ -35,6 +38,7 @@ export const useLeaveStore = create<LeaveStoreState>()(
       includeFridayPenalty: false,
       minBlockEnabled: false,
       minBlockDays: 10,
+      theme: 'dark',
       selectedOpportunityId: null,
       pinnedOpportunities: [],
 
@@ -46,6 +50,8 @@ export const useLeaveStore = create<LeaveStoreState>()(
       toggleMinBlockEnabled: () => set((state) => ({ minBlockEnabled: !state.minBlockEnabled })),
       setMinBlockEnabled: (enabled) => set({ minBlockEnabled: enabled }),
       setMinBlockDays: (days) => set({ minBlockDays: Math.max(3, Math.min(30, days)) }),
+      toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+      setTheme: (theme) => set({ theme }),
       setSelectedOpportunityId: (id) => set({ selectedOpportunityId: id }),
       
       togglePinOpportunity: (id) =>
@@ -66,6 +72,7 @@ export const useLeaveStore = create<LeaveStoreState>()(
           includeFridayPenalty: false,
           minBlockEnabled: false,
           minBlockDays: 10,
+          theme: 'dark',
           selectedOpportunityId: null,
           pinnedOpportunities: [],
         }),

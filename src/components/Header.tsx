@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Download, Wifi, WifiOff, Sparkles, RefreshCw } from 'lucide-react';
+import { Calendar, Download, Wifi, WifiOff, Sparkles, RefreshCw, Sun, Moon } from 'lucide-react';
 import { useLeaveStore } from '../store/useLeaveStore';
 
 export default function Header() {
-  const { selectedYear, setSelectedYear, resetAll } = useLeaveStore();
+  const { selectedYear, setSelectedYear, resetAll, theme, toggleTheme } = useLeaveStore();
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState<boolean>(false);
+
+  // Sync dark/light class on HTML element
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
 
   useEffect(() => {
     setIsOnline(navigator.onLine);
@@ -44,7 +54,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800 shadow-lg">
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo & Title */}
         <div className="flex items-center space-x-3">
@@ -53,29 +63,38 @@ export default function Header() {
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="font-extrabold text-lg sm:text-xl text-white tracking-tight">
-                Hesaplı<span className="text-sky-400">İzin</span>
+              <h1 className="font-extrabold text-lg sm:text-xl text-slate-900 dark:text-white tracking-tight">
+                Hesaplı<span className="text-sky-600 dark:text-sky-400">İzin</span>
               </h1>
-              <span className="px-2 py-0.5 text-xs font-semibold bg-sky-950 text-sky-300 border border-sky-800/60 rounded-full flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-sky-400" /> PWA
+              <span className="px-2 py-0.5 text-xs font-semibold bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 rounded-full flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-sky-500 dark:text-sky-400" /> PWA
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
+            <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
               Resmî Tatil & Hafta Sonu İzin Optimizasyonu
             </p>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Theme Switcher Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60 transition-all"
+            title={theme === 'dark' ? 'Açık Moda Geç' : 'Koyu Moda Geç'}
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-sky-600" />}
+          </button>
+
           {/* Year Switcher */}
-          <div className="flex bg-slate-800/90 p-1 rounded-xl border border-slate-700/60">
+          <div className="flex bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60">
             <button
               onClick={() => setSelectedYear(2026)}
               className={`px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
                 selectedYear === 2026
                   ? 'bg-sky-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               2026
@@ -85,7 +104,7 @@ export default function Header() {
               className={`px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
                 selectedYear === 2027
                   ? 'bg-sky-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               2027
@@ -96,8 +115,8 @@ export default function Header() {
           <div
             className={`hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
               isOnline
-                ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/50'
-                : 'bg-amber-950/40 text-amber-400 border-amber-800/50'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
+                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'
             }`}
             title={isOnline ? 'Cihazınız çevrimiçi. Verileriniz tamamen lokal çalışır.' : 'Çevrimdışısınız (PWA aktif).'}
           >
@@ -128,7 +147,7 @@ export default function Header() {
           {/* Reset button */}
           <button
             onClick={resetAll}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
             title="Ayarları Sıfırla"
           >
             <RefreshCw className="w-4 h-4" />
