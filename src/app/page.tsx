@@ -15,6 +15,9 @@ export default function Home() {
     leaveBudget,
     selectedYear,
     algorithmMode,
+    includeFridayPenalty,
+    minBlockEnabled,
+    minBlockDays,
     selectedOpportunityId,
     setSelectedOpportunityId,
     pinnedOpportunities,
@@ -22,8 +25,15 @@ export default function Home() {
 
   // Optimizasyon motorundan hesaplanmış fırsat paketlerini çek
   const opportunities = useMemo(() => {
-    return calculateLeaveOpportunities(selectedYear, leaveBudget, algorithmMode);
-  }, [selectedYear, leaveBudget, algorithmMode]);
+    return calculateLeaveOpportunities(
+      selectedYear,
+      leaveBudget,
+      algorithmMode,
+      includeFridayPenalty,
+      minBlockEnabled,
+      minBlockDays
+    );
+  }, [selectedYear, leaveBudget, algorithmMode, includeFridayPenalty, minBlockEnabled, minBlockDays]);
 
   // Şayet seçili fırsat yoksa veya elendi ise en yüksek verimli fırsatı varsayılan yap
   const currentSelectedOpportunity = useMemo(() => {
@@ -74,6 +84,12 @@ export default function Home() {
                 <p className="text-xs text-slate-400">
                   {selectedYear} yılı için {leaveBudget} gün izin bütçenizle toplam{' '}
                   <span className="text-sky-300 font-bold">{opportunities.length}</span> fırsat bulundu.
+                  {minBlockEnabled && (
+                    <span className="ml-1 text-emerald-400 font-semibold">(Min. {minBlockDays} Gün Kesintisiz Şartı Aktif)</span>
+                  )}
+                  {includeFridayPenalty && (
+                    <span className="ml-1 text-amber-400 font-semibold">(Cuma=2 Gün Kuralı Aktif)</span>
+                  )}
                 </p>
               </div>
 
@@ -88,7 +104,9 @@ export default function Home() {
             {opportunities.length === 0 ? (
               <div className="p-8 text-center bg-slate-900/60 border border-slate-800 rounded-3xl">
                 <p className="text-slate-400 text-sm font-medium">
-                  Seçilen bütçe ve kriterlere uygun fırsat bulunamadı. Lütfen izin bütçenizi artırın.
+                  {minBlockEnabled
+                    ? `Seçtiğiniz ${leaveBudget} gün izin bütçesi ile minimum ${minBlockDays} gün kesintisiz blok tatil oluşturan fırsat bulunamadı. Lütfen izin bütçenizi artırın veya minimum blok şartını düşürün.`
+                    : 'Seçilen bütçe ve kriterlere uygun fırsat bulunamadı. Lütfen izin bütçenizi artırın veya kural ayarlarınızı kontrol edin.'}
                 </p>
               </div>
             ) : (

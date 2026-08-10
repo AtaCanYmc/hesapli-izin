@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp, CalendarDays, Zap, HelpCircle } from 'lucide-react';
+import { TrendingUp, CalendarDays, Zap, AlertTriangle, ShieldCheck, Layers } from 'lucide-react';
 import { useLeaveStore } from '../store/useLeaveStore';
 import { OptimizationMode } from '../types/holiday';
 
@@ -39,13 +39,25 @@ const ALGORITHM_OPTIONS: {
 ];
 
 const PRESET_BUDGETS = [3, 5, 8, 10, 14];
+const MIN_BLOCK_OPTIONS = [5, 7, 9, 10, 14];
 
 export default function ControlsSection() {
-  const { leaveBudget, setLeaveBudget, algorithmMode, setAlgorithmMode, selectedYear } =
-    useLeaveStore();
+  const {
+    leaveBudget,
+    setLeaveBudget,
+    algorithmMode,
+    setAlgorithmMode,
+    selectedYear,
+    includeFridayPenalty,
+    toggleFridayPenalty,
+    minBlockEnabled,
+    toggleMinBlockEnabled,
+    minBlockDays,
+    setMinBlockDays,
+  } = useLeaveStore();
 
   return (
-    <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl backdrop-blur-xl mb-8">
+    <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl backdrop-blur-xl mb-8 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* Left Column: Budget Input & Slider */}
@@ -159,6 +171,92 @@ export default function ControlsSection() {
               );
             })}
           </div>
+        </div>
+
+      </div>
+
+      {/* Special Corporate Rules Section */}
+      <div className="pt-5 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* Rule 1: Friday Penalty */}
+        <div className="flex items-start justify-between gap-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-800/50">
+          <div className="flex items-start space-x-3">
+            <div className="p-2.5 bg-amber-950/60 border border-amber-800/60 rounded-xl text-amber-400 shrink-0">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">
+                Cuma İzni 2 Gün Sayılsın
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Cuma izinlerinde Hafta Sonu da kotadan düşer (2x maliyet).
+              </p>
+            </div>
+          </div>
+
+          <label className="relative inline-flex items-center cursor-pointer shrink-0">
+            <input
+              type="checkbox"
+              checked={includeFridayPenalty}
+              onChange={toggleFridayPenalty}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+          </label>
+        </div>
+
+        {/* Rule 2: Minimum Block Leave Requirement */}
+        <div className="flex flex-col justify-between gap-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-800/50">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start space-x-3">
+              <div className="p-2.5 bg-emerald-950/60 border border-emerald-800/60 rounded-xl text-emerald-400 shrink-0">
+                <Layers className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  Min. Blok İzin Şartı
+                  <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">
+                    İş Kanunu m.56
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  İznin bir parçası en az {minBlockDays} gün kesintisiz blok olmalıdır.
+                </p>
+              </div>
+            </div>
+
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={minBlockEnabled}
+                onChange={toggleMinBlockEnabled}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+          </div>
+
+          {/* Sub-selector for min block days */}
+          {minBlockEnabled && (
+            <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-300">Min. Kesintisiz Tatil:</span>
+              <div className="flex gap-1.5">
+                {MIN_BLOCK_OPTIONS.map((days) => (
+                  <button
+                    key={days}
+                    onClick={() => setMinBlockDays(days)}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                      minBlockDays === days
+                        ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                        : 'bg-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {days} Gün
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

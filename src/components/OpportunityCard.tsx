@@ -14,6 +14,8 @@ import {
   Copy,
   ChevronRight,
   Sparkles,
+  AlertTriangle,
+  ShieldCheck,
 } from 'lucide-react';
 import { LeaveOpportunity } from '../types/holiday';
 import { useLeaveStore } from '../store/useLeaveStore';
@@ -29,7 +31,7 @@ export default function OpportunityCard({
   isSelected,
   onSelect,
 }: OpportunityCardProps) {
-  const { pinnedOpportunities, togglePinOpportunity } = useLeaveStore();
+  const { pinnedOpportunities, togglePinOpportunity, minBlockEnabled } = useLeaveStore();
   const [copied, setCopied] = useState(false);
 
   const isPinned = pinnedOpportunities.includes(opportunity.id);
@@ -43,7 +45,7 @@ export default function OpportunityCard({
 
   const handleCopySchedule = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const text = `🎉 İzin Planım:\n📅 Tatil Aralığı: ${formattedStart} - ${formattedEnd} (${opportunity.totalOffDays} Gün Kesintisiz)\n🏖️ Alınacak İzin Tarihleri: ${formattedLeaveDates.join(', ')} (${opportunity.leaveDaysRequired} gün izin)\n⚡ Verimlilik Skoru: ${opportunity.efficiencyScore}x\n(Hesaplı İzin PWA ile oluşturuldu)`;
+    const text = `🎉 İzin Planım:\n📅 Tatil Aralığı: ${formattedStart} - ${formattedEnd} (${opportunity.totalOffDays} Gün Kesintisiz)\n🏖️ Alınacak İzin Tarihleri: ${formattedLeaveDates.join(', ')} (${opportunity.leaveDaysRequired} gün izin maliyeti${opportunity.hasFridayPenalty ? ' - Cuma 2 gün kuralı dahil' : ''})\n⚡ Verimlilik Skoru: ${opportunity.efficiencyScore}x\n(Hesaplı İzin PWA ile oluşturuldu)`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -68,11 +70,27 @@ export default function OpportunityCard({
               {opportunity.efficiencyScore}x Verimlilik
             </span>
 
+            {/* Min Block Requirement Badge */}
+            {minBlockEnabled && opportunity.satisfiesMinBlock && (
+              <span className="px-2.5 py-0.5 bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                Min. {opportunity.minBlockTarget} Gün Blok Kuralına Uygun
+              </span>
+            )}
+
             {/* Half day highlight */}
             {opportunity.halfDaysCount > 0 && (
               <span className="px-2.5 py-0.5 bg-amber-950/80 text-amber-300 border border-amber-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
                 <Zap className="w-3 h-3 text-amber-400" />
                 {opportunity.halfDaysCount} Arefe (0.5 Gün)
+              </span>
+            )}
+
+            {/* Friday Penalty Highlight */}
+            {opportunity.hasFridayPenalty && (
+              <span className="px-2.5 py-0.5 bg-orange-950/80 text-orange-300 border border-orange-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3 text-orange-400" />
+                Cuma Kuralı (+{opportunity.fridayPenaltyCount} İzin)
               </span>
             )}
           </div>
@@ -131,11 +149,18 @@ export default function OpportunityCard({
           </div>
           <div>
             <span className="text-[11px] font-semibold text-slate-400 block uppercase">
-              Harcanacak İzin
+              İzin Maliyeti
             </span>
-            <span className="text-lg font-extrabold text-sky-300">
-              {opportunity.leaveDaysRequired} GÜN
-            </span>
+            <div className="flex items-baseline space-x-1">
+              <span className="text-lg font-extrabold text-sky-300">
+                {opportunity.leaveDaysRequired} GÜN
+              </span>
+              {opportunity.hasFridayPenalty && (
+                <span className="text-[10px] text-slate-400 line-through">
+                  ({opportunity.baseLeaveDays} gün)
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
