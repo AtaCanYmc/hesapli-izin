@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Download, Wifi, WifiOff, Sparkles, RefreshCw, Sun, Moon, CalendarDays } from 'lucide-react';
+import { Calendar, Download, Wifi, WifiOff, Sparkles, RefreshCw, Sun, Moon, CalendarDays, Share2, Check } from 'lucide-react';
 import { useLeaveStore } from '../store/useLeaveStore';
 import { SUPPORTED_YEARS } from '../lib/turkeyHolidays';
 
@@ -10,6 +10,7 @@ export default function Header() {
   const [isOnline, setIsOnline] = useState<boolean>(true);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState<boolean>(false);
+  const [copiedAppShare, setCopiedAppShare] = useState<boolean>(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -53,6 +54,29 @@ export default function Header() {
     setDeferredPrompt(null);
   };
 
+  const handleShareApp = async () => {
+    const shareData = {
+      title: 'Hesaplı İzin PWA — Türkiye Yıllık İzin Optimizasyonu',
+      text: 'Resmî tatiller ve hafta sonlarını birleştirerek maksimum tatil yapın!',
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (e) {
+        // Fallback to copy
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiedAppShare(true);
+      setTimeout(() => setCopiedAppShare(false), 2000);
+    } catch (e) {}
+  };
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -78,7 +102,17 @@ export default function Header() {
 
         {/* Action Controls */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-          {/* Year Switcher Select Box (2026 - 2050) */}
+          {/* Share App Button */}
+          <button
+            onClick={handleShareApp}
+            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60 transition-all flex items-center gap-1.5 text-xs font-bold"
+            title="Uygulamayı Paylaş"
+          >
+            {copiedAppShare ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4 text-sky-500" />}
+            <span className="hidden md:inline">Paylaş</span>
+          </button>
+
+          {/* Year Switcher Select Box */}
           <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700/60">
             <CalendarDays className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             <select
@@ -105,7 +139,7 @@ export default function Header() {
 
           {/* Offline Badge */}
           <div
-            className={`hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+            className={`hidden lg:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
               isOnline
                 ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50'
                 : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/50'

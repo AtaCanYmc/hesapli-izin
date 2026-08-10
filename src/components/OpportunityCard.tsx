@@ -18,11 +18,17 @@ import {
   ShieldCheck,
   Download,
   Printer,
-  FileSpreadsheet,
+  Share2,
+  MessageCircle,
 } from 'lucide-react';
 import { LeaveOpportunity } from '../types/holiday';
 import { useLeaveStore } from '../store/useLeaveStore';
-import { downloadIcsFile, triggerPdfPrint } from '../lib/exportUtils';
+import {
+  downloadIcsFile,
+  triggerPdfPrint,
+  shareOpportunityWhatsApp,
+  shareOpportunityNative,
+} from '../lib/exportUtils';
 
 interface OpportunityCardProps {
   opportunity: LeaveOpportunity;
@@ -54,6 +60,19 @@ export default function OpportunityCard({
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    setShowExportMenu(false);
+  };
+
+  const handleWhatsAppShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    shareOpportunityWhatsApp(opportunity);
+    setShowExportMenu(false);
+  };
+
+  const handleNativeShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await shareOpportunityNative(opportunity);
+    setShowExportMenu(false);
   };
 
   const handleDownloadIcs = (e: React.MouseEvent) => {
@@ -118,36 +137,51 @@ export default function OpportunityCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-1 relative">
-          {/* Download / Export Menu Toggle */}
+        <div className="flex items-center gap-1.5 relative">
+          {/* Share & Download Menu Button */}
           <div className="relative">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setShowExportMenu(!showExportMenu);
               }}
-              className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900 transition-all flex items-center gap-1 text-xs font-bold"
-              title="Planı İndir / Dışa Aktar"
+              className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900 transition-all flex items-center gap-1.5 text-xs font-bold"
+              title="Planı Paylaş veya İndir"
             >
-              <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">İndir</span>
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Paylaş / İndir</span>
             </button>
 
             {/* Dropdown Menu */}
             {showExportMenu && (
-              <div className="absolute right-0 top-10 z-30 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 space-y-1">
+              <div className="absolute right-0 top-10 z-30 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-1.5 space-y-1">
+                <button
+                  onClick={handleWhatsAppShare}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 rounded-xl flex items-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-500" />
+                  <span>WhatsApp'ta Paylaş</span>
+                </button>
+                <button
+                  onClick={handleNativeShare}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 hover:text-sky-600 rounded-xl flex items-center gap-2"
+                >
+                  <Share2 className="w-4 h-4 text-sky-500" />
+                  <span>Sistem Paylaşım Menüsü</span>
+                </button>
+                <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
                 <button
                   onClick={handleDownloadIcs}
                   className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
                 >
-                  <CalendarIcon className="w-4 h-4 text-sky-500" />
+                  <CalendarIcon className="w-4 h-4 text-indigo-500" />
                   <span>Takvime Ekle (.ics)</span>
                 </button>
                 <button
                   onClick={handlePrintPdf}
                   className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
                 >
-                  <Printer className="w-4 h-4 text-emerald-500" />
+                  <Printer className="w-4 h-4 text-purple-500" />
                   <span>PDF / HR Dilekçe</span>
                 </button>
                 <button
@@ -155,12 +189,13 @@ export default function OpportunityCard({
                   className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
                 >
                   <Copy className="w-4 h-4 text-amber-500" />
-                  <span>Metin Olarak Kopyala</span>
+                  <span>Metni Kopyala</span>
                 </button>
               </div>
             )}
           </div>
 
+          {/* Pin Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();

@@ -6,9 +6,6 @@ import { LeaveOpportunity } from '../types/holiday';
  * .ics (iCalendar) Formatında Takvim Dosyası Üretir ve İndirir
  */
 export function downloadIcsFile(opportunity: LeaveOpportunity) {
-  const startDateObj = parseISO(opportunity.startDate);
-  const endDateObj = parseISO(opportunity.endDate);
-
   const formatIcsDate = (dateStr: string) => {
     return dateStr.replace(/-/g, '');
   };
@@ -86,7 +83,6 @@ export function downloadCsvExport(opportunities: LeaveOpportunity[], year: numbe
     `"${opp.scoreReason.replace(/"/g, '""')}"`,
   ]);
 
-  // UTF-8 BOM ekleyerek Excel'in Türkçe karakterleri düzgün açmasını sağlıyoruz
   const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -125,7 +121,7 @@ export function triggerPdfPrint(opportunity: LeaveOpportunity) {
         .header { border-bottom: 2px solid #0284c7; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 24px; font-weight: bold; color: #0284c7; }
         .date { font-size: 12px; color: #64748b; }
-        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; p-6; margin-bottom: 25px; padding: 20px; }
+        .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; padding: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat { background: #ffffff; padding: 12px 18px; border-radius: 8px; border: 1px solid #cbd5e1; }
         .stat-val { font-size: 20px; font-weight: bold; color: #0f172a; }
@@ -198,4 +194,54 @@ export function triggerPdfPrint(opportunity: LeaveOpportunity) {
 
   printWindow.document.write(html);
   printWindow.document.close();
+}
+
+/**
+ * Paylaşım Metni Formatlar
+ */
+export function formatShareText(opportunity: LeaveOpportunity): string {
+  const formattedStart = format(parseISO(opportunity.startDate), 'd MMMM yyyy (EEEE)', { locale: tr });
+  const formattedEnd = format(parseISO(opportunity.endDate), 'd MMMM yyyy (EEEE)', { locale: tr });
+  const formattedLeaveDates = opportunity.leaveDates
+    .map((d) => format(parseISO(d), 'd MMMM (EEE)', { locale: tr }))
+    .join(', ');
+
+  return `🎉 Yıllık İzin Planım:\n\n📅 Tatil Aralığı: ${formattedStart} - ${formattedEnd}\n🏖️ Toplam Kesintisiz Tatil: ${opportunity.totalOffDays} Gün\n⏱️ Harcanacak İzin: ${opportunity.leaveDaysRequired} Gün\n⚡ Verimlilik Skoru: ${opportunity.efficiencyScore}x\n\n📌 Alınacak İzin Tarihleri: ${formattedLeaveDates}\n\nHesaplı İzin PWA ile hesaplandı: https://hesapli-izin.app`;
+}
+
+/**
+ * WhatsApp Üzerinden Doğrudan Paylaşır
+ */
+export function shareOpportunityWhatsApp(opportunity: LeaveOpportunity) {
+  const text = formatShareText(opportunity);
+  const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
+
+/**
+ * Web Share API (Yerel Paylaşım Menüsü) Tetikler
+ */
+export async function shareOpportunityNative(opportunity: LeaveOpportunity): Promise<boolean> {
+  const shareText = formatShareText(opportunity);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `İzin Planı: ${opportunity.title}`,
+        text: shareText,
+        url: window.location.href,
+      });
+      return true;
+    } catch (err) {
+      console.log('Paylaşım iptal edildi veya desteklenmiyor.');
+    }
+  }
+
+  // Fallback to clipboard
+  try {
+    await navigator.clipboard.writeText(shareText);
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
