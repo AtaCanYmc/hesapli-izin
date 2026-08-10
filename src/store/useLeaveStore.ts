@@ -4,18 +4,18 @@ import { OptimizationMode } from '../types/holiday';
 
 interface LeaveStoreState {
   leaveBudget: number;
-  selectedYear: 2026 | 2027;
+  selectedYear: number; // 2026 - 2050
   algorithmMode: OptimizationMode;
-  includeFridayPenalty: boolean; // Cuma izni 2 gün sayılsın kuralı
-  minBlockEnabled: boolean; // Minimum X gün kesintisiz blok izin kuralı
-  minBlockDays: number; // Minimum kesintisiz blok gün hedefi (ör. 10 gün)
-  theme: 'dark' | 'light'; // Tema modu
+  includeFridayPenalty: boolean;
+  minBlockEnabled: boolean;
+  minBlockDays: number;
+  theme: 'dark' | 'light';
   selectedOpportunityId: string | null;
   pinnedOpportunities: string[];
   
   // Actions
   setLeaveBudget: (budget: number) => void;
-  setSelectedYear: (year: 2026 | 2027) => void;
+  setSelectedYear: (year: number) => void;
   setAlgorithmMode: (mode: OptimizationMode) => void;
   toggleFridayPenalty: () => void;
   setIncludeFridayPenalty: (enabled: boolean) => void;
@@ -43,7 +43,7 @@ export const useLeaveStore = create<LeaveStoreState>()(
       pinnedOpportunities: [],
 
       setLeaveBudget: (budget) => set({ leaveBudget: Math.max(1, Math.min(30, budget)) }),
-      setSelectedYear: (year) => set({ selectedYear: year, selectedOpportunityId: null }),
+      setSelectedYear: (year) => set({ selectedYear: Math.max(2026, Math.min(2050, year)), selectedOpportunityId: null }),
       setAlgorithmMode: (mode) => set({ algorithmMode: mode }),
       toggleFridayPenalty: () => set((state) => ({ includeFridayPenalty: !state.includeFridayPenalty })),
       setIncludeFridayPenalty: (enabled) => set({ includeFridayPenalty: enabled }),

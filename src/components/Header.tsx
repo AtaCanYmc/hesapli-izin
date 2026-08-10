@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Download, Wifi, WifiOff, Sparkles, RefreshCw, Sun, Moon } from 'lucide-react';
+import { Calendar, Download, Wifi, WifiOff, Sparkles, RefreshCw, Sun, Moon, CalendarDays } from 'lucide-react';
 import { useLeaveStore } from '../store/useLeaveStore';
+import { SUPPORTED_YEARS } from '../lib/turkeyHolidays';
 
 export default function Header() {
   const { selectedYear, setSelectedYear, resetAll, theme, toggleTheme } = useLeaveStore();
@@ -10,7 +11,6 @@ export default function Header() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState<boolean>(false);
 
-  // Sync dark/light class on HTML element
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
@@ -67,7 +67,7 @@ export default function Header() {
                 Hesaplı<span className="text-sky-600 dark:text-sky-400">İzin</span>
               </h1>
               <span className="px-2 py-0.5 text-xs font-semibold bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60 rounded-full flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-sky-500 dark:text-sky-400" /> PWA
+                <Sparkles className="w-3 h-3 text-sky-500 dark:text-sky-400" /> 2026-2050
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
@@ -78,6 +78,22 @@ export default function Header() {
 
         {/* Action Controls */}
         <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Year Switcher Select Box (2026 - 2050) */}
+          <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700/60">
+            <CalendarDays className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+              className="bg-transparent text-xs sm:text-sm font-bold text-slate-900 dark:text-white cursor-pointer focus:outline-none pr-1"
+            >
+              {SUPPORTED_YEARS.map((year) => (
+                <option key={year} value={year} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                  {year} Yılı
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Theme Switcher Button */}
           <button
             onClick={toggleTheme}
@@ -86,30 +102,6 @@ export default function Header() {
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4 text-sky-600" />}
           </button>
-
-          {/* Year Switcher */}
-          <div className="flex bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700/60">
-            <button
-              onClick={() => setSelectedYear(2026)}
-              className={`px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
-                selectedYear === 2026
-                  ? 'bg-sky-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              2026
-            </button>
-            <button
-              onClick={() => setSelectedYear(2027)}
-              className={`px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg transition-all ${
-                selectedYear === 2027
-                  ? 'bg-sky-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              2027
-            </button>
-          </div>
 
           {/* Offline Badge */}
           <div

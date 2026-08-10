@@ -46,7 +46,7 @@ export interface CalendarDay {
 
 export interface UserPreferences {
   leaveBudget: number; // Toplam kullanılabilir yıllık izin günü
-  selectedYear: 2026 | 2027;
+  selectedYear: number; // Seçilen yıl (2026 - 2050)
   algorithmMode: OptimizationMode;
   includeFridayPenalty: boolean; // Cuma günü alınan izinlerin 2 gün sayılması kuralı
   minBlockEnabled: boolean; // Minimum X gün blok izin kullanma zorunluluğu

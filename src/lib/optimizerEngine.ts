@@ -1,6 +1,6 @@
 import { format, parseISO, addDays, getDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import holidaysData from '../data/holidays.json';
+import { getHolidaysForYear } from './turkeyHolidays';
 import {
   Holiday,
   LeaveOpportunity,
@@ -8,8 +8,6 @@ import {
   CalendarDay,
   DayType,
 } from '../types/holiday';
-
-const ALL_HOLIDAYS = holidaysData as Holiday[];
 
 /**
  * Belirtilen yıl için tüm günleri içeren takvim haritasını oluşturur.
@@ -19,6 +17,7 @@ export function buildYearCalendar(year: number): CalendarDay[] {
   const startDate = new Date(year, 0, 1); // 1 Ocak
   const endDate = new Date(year, 11, 31); // 31 Aralık
 
+  const holidaysForYear = getHolidaysForYear(year);
   let currentDate = startDate;
 
   while (currentDate <= endDate) {
@@ -26,7 +25,7 @@ export function buildYearCalendar(year: number): CalendarDay[] {
     const dayOfWeek = getDay(currentDate);
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-    const holidayMatch = ALL_HOLIDAYS.find((h) => h.date === dateStr);
+    const holidayMatch = holidaysForYear.find((h) => h.date === dateStr);
 
     let type: DayType = 'work';
     let holidayName: string | undefined = undefined;
@@ -60,7 +59,7 @@ export function buildYearCalendar(year: number): CalendarDay[] {
 
 /**
  * Ana Optimizasyon Motoru
- * Verilen yıl, bütçe, mod, Cuma kuralı ve minimum blok tatil şartına göre en avantajlı izin fırsatlarını üretir.
+ * Verilen yıl (2026 - 2050), bütçe, mod, Cuma kuralı ve minimum blok tatil şartına göre en avantajlı izin fırsatlarını üretir.
  */
 export function calculateLeaveOpportunities(
   year: number,
@@ -73,16 +72,13 @@ export function calculateLeaveOpportunities(
   if (leaveBudget <= 0) return [];
 
   const calendar = buildYearCalendar(year);
+  const holidaysInYear = getHolidaysForYear(year);
   const rawOpportunities: LeaveOpportunity[] = [];
-
-  // Yıl içindeki resmî tatilleri ve köprü noktalarını tara
-  const holidaysInYear = ALL_HOLIDAYS.filter((h) => h.date.startsWith(`${year}`));
 
   for (const holiday of holidaysInYear) {
     const holidayIndex = calendar.findIndex((d) => d.date === holiday.date);
     if (holidayIndex === -1) continue;
 
-    // Tatil etrafında farklı pencere yarıçapları tara
     for (let leftExpand = 0; leftExpand <= 8; leftExpand++) {
       for (let rightExpand = 0; rightExpand <= 8; rightExpand++) {
         const startIndex = Math.max(0, holidayIndex - leftExpand);
@@ -125,7 +121,6 @@ export function calculateLeaveOpportunities(
           }
         }
 
-        // Bütçe ve kural kontrolleri
         if (leaveDaysRequired === 0 || leaveDaysRequired > leaveBudget) continue;
 
         const firstDayType = subCalendar[0].type;
@@ -135,7 +130,6 @@ export function calculateLeaveOpportunities(
 
         const totalOffDays = subCalendar.length;
 
-        // Minimum Blok İzin Filtresi (Ör. 10 gün kesintisiz tatil şartı)
         if (minBlockEnabled && totalOffDays < minBlockDays) continue;
 
         const efficiencyScore = Number((totalOffDays / leaveDaysRequired).toFixed(2));
