@@ -1,0 +1,266 @@
+[
+  {
+    "id": "tr-2026-yilbasi",
+    "date": "2026-01-01",
+    "name": "Yılbaşı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-ramazan-arefe",
+    "date": "2026-03-19",
+    "name": "Ramazan Bayramı Arefesi",
+    "duration": 0.5,
+    "isArefe": true,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-ramazan-1",
+    "date": "2026-03-20",
+    "name": "Ramazan Bayramı 1. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-ramazan-2",
+    "date": "2026-03-21",
+    "name": "Ramazan Bayramı 2. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-ramazan-3",
+    "date": "2026-03-22",
+    "name": "Ramazan Bayramı 3. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-23-nisan",
+    "date": "2026-04-23",
+    "name": "Ulusal Egemenlik ve Çocuk Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-1-mayis",
+    "date": "2026-05-01",
+    "name": "Emek ve Dayanışma Günü",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-19-mayis",
+    "date": "2026-05-19",
+    "name": "Atatürk'ü Anma, Gençlik ve Spor Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-kurban-arefe",
+    "date": "2026-05-26",
+    "name": "Kurban Bayramı Arefesi",
+    "duration": 0.5,
+    "isArefe": true,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-kurban-1",
+    "date": "2026-05-27",
+    "name": "Kurban Bayramı 1. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-kurban-2",
+    "date": "2026-05-28",
+    "name": "Kurban Bayramı 2. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-kurban-3",
+    "date": "2026-05-29",
+    "name": "Kurban Bayramı 3. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-kurban-4",
+    "date": "2026-05-30",
+    "name": "Kurban Bayramı 4. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2026-15-temmuz",
+    "date": "2026-07-15",
+    "name": "15 Temmuz Demokrasi ve Milli Birlik Günü",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-30-agustos",
+    "date": "2026-08-30",
+    "name": "Zafer Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-cumhuriyet-arefe",
+    "date": "2026-10-28",
+    "name": "Cumhuriyet Bayramı Arefesi",
+    "duration": 0.5,
+    "isArefe": true,
+    "type": "national"
+  },
+  {
+    "id": "tr-2026-29-ekim",
+    "date": "2026-10-29",
+    "name": "Cumhuriyet Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-yilbasi",
+    "date": "2027-01-01",
+    "name": "Yılbaşı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-ramazan-arefe",
+    "date": "2027-03-08",
+    "name": "Ramazan Bayramı Arefesi",
+    "duration": 0.5,
+    "isArefe": true,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-ramazan-1",
+    "date": "2027-03-09",
+    "name": "Ramazan Bayramı 1. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-ramazan-2",
+    "date": "2027-03-10",
+    "name": "Ramazan Bayramı 2. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-ramazan-3",
+    "date": "2027-03-11",
+    "name": "Ramazan Bayramı 3. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-23-nisan",
+    "date": "2027-04-23",
+    "name": "Ulusal Egemenlik ve Çocuk Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-1-mayis",
+    "date": "2027-05-01",
+    "name": "Emek ve Dayanışma Günü",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-kurban-arefe",
+    "date": "2027-05-15",
+    "name": "Kurban Bayramı Arefesi",
+    "duration": 0.5,
+    "isArefe": true,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-kurban-1",
+    "date": "2027-05-16",
+    "name": "Kurban Bayramı 1. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-kurban-2",
+    "date": "2027-05-17",
+    "name": "Kurban Bayramı 2. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-kurban-3",
+    "date": "2027-05-18",
+    "name": "Kurban Bayramı 3. Gün",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-kurban-4-19mayis",
+    "date": "2027-05-19",
+    "name": "Kurban Bayramı 4. Gün & 19 Mayıs",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "religious"
+  },
+  {
+    "id": "tr-2027-15-temmuz",
+    "date": "2027-07-15",
+    "name": "15 Temmuz Demokrasi ve Milli Birlik Günü",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-30-agustos",
+    "date": "2027-08-30",
+    "name": "Zafer Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-cumhuriyet-arefe",
+    "date": "2027-10-28",
+    "name": "Cumhuriyet Bayramı Arefesi",
+    "duration": 0.5,
+    "isArefe": true,
+    "type": "national"
+  },
+  {
+    "id": "tr-2027-29-ekim",
+    "date": "2027-10-29",
+    "name": "Cumhuriyet Bayramı",
+    "duration": 1.0,
+    "isArefe": false,
+    "type": "national"
+  }
+]
