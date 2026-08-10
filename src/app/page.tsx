@@ -6,10 +6,11 @@ import ControlsSection from '../components/ControlsSection';
 import SummaryStats from '../components/SummaryStats';
 import OpportunityCard from '../components/OpportunityCard';
 import CalendarView from '../components/CalendarView';
+import AnnualPlanCart from '../components/AnnualPlanCart';
 import { calculateLeaveOpportunities } from '../lib/optimizerEngine';
 import { useLeaveStore } from '../store/useLeaveStore';
 import { downloadCsvExport } from '../lib/exportUtils';
-import { Sparkles, ShieldCheck, Heart, Bookmark, ListFilter, FileSpreadsheet, Building2 } from 'lucide-react';
+import { Sparkles, ShieldCheck, Heart, Bookmark, ListFilter, FileSpreadsheet, Building2, ShoppingBag } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -20,11 +21,13 @@ export default function Home() {
     minBlockEnabled,
     minBlockDays,
     customHolidays,
+    selectedPackages,
     selectedOpportunityId,
     setSelectedOpportunityId,
     pinnedOpportunities,
   } = useLeaveStore();
 
+  // Sıralı Optimizasyon: Seçili paketlerden sonra kalan bütçeyle ve blok izin önceliğiyle hesaplama yap
   const opportunities = useMemo(() => {
     return calculateLeaveOpportunities(
       selectedYear,
@@ -33,9 +36,19 @@ export default function Home() {
       includeFridayPenalty,
       minBlockEnabled,
       minBlockDays,
-      customHolidays
+      customHolidays,
+      selectedPackages
     );
-  }, [selectedYear, leaveBudget, algorithmMode, includeFridayPenalty, minBlockEnabled, minBlockDays, customHolidays]);
+  }, [
+    selectedYear,
+    leaveBudget,
+    algorithmMode,
+    includeFridayPenalty,
+    minBlockEnabled,
+    minBlockDays,
+    customHolidays,
+    selectedPackages,
+  ]);
 
   const currentSelectedOpportunity = useMemo(() => {
     if (opportunities.length === 0) return null;
@@ -47,7 +60,8 @@ export default function Home() {
     downloadCsvExport(opportunities, selectedYear);
   };
 
-  const customHolidaysThisYear = customHolidays.filter((h) => h.date.startsWith(`${selectedYear}`));
+  const usedBudget = selectedPackages.reduce((acc, curr) => acc + curr.leaveDaysRequired, 0);
+  const remainingBudget = Math.max(0, leaveBudget - usedBudget);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -67,12 +81,15 @@ export default function Home() {
             Az İzin Harca, <span className="bg-gradient-to-r from-sky-600 via-teal-500 to-emerald-600 dark:from-sky-400 dark:via-teal-300 dark:to-emerald-400 bg-clip-text text-transparent">Çok Tatil Yap</span>
           </h1>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Hafta sonları, dinî bayramlar ve Arefe yarım günlerini akıllıca birleştirin. Gizlilik odaklı, tamamen tarayıcınızda çalışan offline PWA motoru.
+            Hafta sonları, dinî bayramlar ve Arefe yarım günlerini akıllıca birleştirin. Bir izin eklediğinizde kalan izinleriniz için otomatik <strong>blok tatiller</strong> önerilir.
           </p>
         </div>
 
         {/* Interactive Controls & Preset Selector */}
         <ControlsSection />
+
+        {/* Annual Plan Cart (Shows when packages are added) */}
+        <AnnualPlanCart />
 
         {/* Key Metrics Overview */}
         <SummaryStats opportunities={opportunities} leaveBudget={leaveBudget} />
@@ -86,22 +103,14 @@ export default function Home() {
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <ListFilter className="w-5 h-5 text-sky-600 dark:text-sky-400" />
-                  Önerilen İzin Paketleri
+                  {selectedPackages.length > 0
+                    ? `Kalan İzin İçin Öneriler (${remainingBudget} Gün İzin)`
+                    : 'Önerilen İzin Paketleri'}
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {selectedYear} yılı için {leaveBudget} gün izin bütçenizle toplam{' '}
-                  <span className="text-sky-600 dark:text-sky-300 font-bold">{opportunities.length}</span> fırsat bulundu.
-                  {customHolidaysThisYear.length > 0 && (
-                    <span className="ml-1 text-purple-600 dark:text-purple-400 font-semibold flex-inline items-center gap-1">
-                      <Building2 className="w-3 h-3 inline" /> ({customHolidaysThisYear.length} Özel Tatil Ekli)
-                    </span>
-                  )}
-                  {minBlockEnabled && (
-                    <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-semibold">(Min. {minBlockDays} Gün Kesintisiz Şartı Aktif)</span>
-                  )}
-                  {includeFridayPenalty && (
-                    <span className="ml-1 text-amber-600 dark:text-amber-400 font-semibold">(Cuma=2 Gün Kuralı Aktif)</span>
-                  )}
+                  {selectedPackages.length > 0
+                    ? `Kalan ${remainingBudget} gün bütçeniz için öncelikle Blok İzinler hesaplandı.`
+                    : `${selectedYear} yılı için ${leaveBudget} gün izin bütçenizle toplam ${opportunities.length} fırsat bulundu.`}
                 </p>
               </div>
 
@@ -128,11 +137,12 @@ export default function Home() {
 
             {/* List of Opportunity Cards */}
             {opportunities.length === 0 ? (
-              <div className="p-8 text-center bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-3xl">
+              <div className="p-8 text-center bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-2">
+                <ShoppingBag className="w-8 h-8 text-sky-500 mx-auto opacity-80" />
                 <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
-                  {minBlockEnabled
-                    ? `Seçtiğiniz ${leaveBudget} gün izin bütçesi ile minimum ${minBlockDays} gün kesintisiz blok tatil oluşturan fırsat bulunamadı. Lütfen izin bütçenizi artırın veya minimum blok şartını düşürün.`
-                    : 'Seçilen bütçe ve kriterlere uygun fırsat bulunamadı. Lütfen izin bütçenizi artırın veya kural ayarlarınızı kontrol edin.'}
+                  {remainingBudget === 0
+                    ? '🎉 Tebrikler! Tüm yıllık izin bütçenizi sepetinize eklediğiniz paketlerle doldurdunuz.'
+                    : `Kalan ${remainingBudget} gün izin bütçenizle yeni bir tatil bloğu oluşturulamıyor. Bütçeyi artırabilir veya sepetteki paketleri güncelleyebilirsiniz.`}
                 </p>
               </div>
             ) : (

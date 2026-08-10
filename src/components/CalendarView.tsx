@@ -5,6 +5,7 @@ import { parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { buildYearCalendar } from '../lib/optimizerEngine';
 import { LeaveOpportunity, CalendarDay } from '../types/holiday';
+import { useLeaveStore } from '../store/useLeaveStore';
 
 interface CalendarViewProps {
   year: number;
@@ -20,7 +21,7 @@ const MONTH_NAMES = [
   'Haziran',
   'Temmuz',
   'Ağustos',
-  'Eylül',
+  'Eylul',
   'Ekim',
   'Kasım',
   'Aralık',
@@ -29,21 +30,23 @@ const MONTH_NAMES = [
 const WEEKDAY_SHORT = ['Pz', 'Pt', 'Sa', 'Çr', 'Pr', 'Cu', 'Ct'];
 
 export default function CalendarView({ year, selectedOpportunity }: CalendarViewProps) {
+  const { customHolidays, selectedPackages } = useLeaveStore();
+
   const initialMonth = selectedOpportunity
     ? parseISO(selectedOpportunity.startDate).getMonth()
     : 0;
 
   const [currentMonth, setCurrentMonth] = useState<number>(initialMonth);
 
-  const fullCalendar = buildYearCalendar(year);
+  const fullCalendar = buildYearCalendar(year, customHolidays, selectedPackages);
   const monthDays = fullCalendar.filter((d) => d.month === currentMonth);
 
   const firstDayOfMonth = new Date(year, currentMonth, 1);
   const startDayOfWeek = firstDayOfMonth.getDay();
-
   const emptyPrefixSlots = Array.from({ length: startDayOfWeek });
 
-  const isDateInOpportunityRange = (dateStr: string) => {
+  // Tüm sepet ve aktif seçilen fırsat tarihlerini topla
+  const isDateInActiveOpportunityRange = (dateStr: string) => {
     if (!selectedOpportunity) return false;
     return dateStr >= selectedOpportunity.startDate && dateStr <= selectedOpportunity.endDate;
   };
@@ -51,6 +54,10 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
   const isRecommendedLeaveDate = (dateStr: string) => {
     if (!selectedOpportunity) return false;
     return selectedOpportunity.leaveDates.includes(dateStr);
+  };
+
+  const isCartLeaveDate = (dateStr: string) => {
+    return selectedPackages.some((pkg) => pkg.leaveDates.includes(dateStr));
   };
 
   const nextMonth = () => setCurrentMonth((prev) => (prev === 11 ? 0 : prev + 1));
@@ -67,7 +74,7 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             {selectedOpportunity
-              ? `Seçili Fırsat: ${selectedOpportunity.title}`
+              ? `İncelenen Paket: ${selectedOpportunity.title}`
               : 'Bir fırsat kartına tıklayarak takvim üzerinde detaylı görün.'}
           </p>
         </div>
@@ -102,6 +109,12 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           <span className="w-3.5 h-3.5 rounded-md bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
           <span className="text-slate-700 dark:text-slate-300">Alınacak İzin</span>
         </div>
+        {selectedPackages.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 rounded-md bg-sky-500 shadow-sm shadow-sky-500/50"></span>
+            <span className="text-slate-700 dark:text-slate-300">Sepetteki İzin</span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5">
           <span className="w-3.5 h-3.5 rounded-md bg-rose-500 shadow-sm shadow-rose-500/50"></span>
           <span className="text-slate-700 dark:text-slate-300">Resmî / Dini Tatil</span>
@@ -111,11 +124,7 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           <span className="text-slate-700 dark:text-slate-300">Arefe (Yarım Gün)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-md bg-sky-100 dark:bg-sky-900 border border-sky-300 dark:border-sky-600"></span>
-          <span className="text-slate-700 dark:text-slate-300">Hafta Sonu</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></span>
+          <span className="w-3.5 h-3.5 rounded-md bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700"></span>
           <span className="text-slate-700 dark:text-slate-300">İş Günü</span>
         </div>
       </div>
@@ -143,16 +152,21 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
 
         {/* Days of month */}
         {monthDays.map((day: CalendarDay) => {
-          const inRange = isDateInOpportunityRange(day.date);
-          const isLeave = isRecommendedLeaveDate(day.date);
+          const inActiveRange = isDateInActiveOpportunityRange(day.date);
+          const isLeaveActive = isRecommendedLeaveDate(day.date);
+          const isCartLeave = isCartLeaveDate(day.date);
 
           let bgClass = 'bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800';
           let badgeText = '';
 
-          if (isLeave) {
+          if (isLeaveActive) {
             bgClass =
               'bg-gradient-to-br from-emerald-500 to-teal-600 text-slate-950 font-black border-emerald-400 shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-400/50 scale-105';
             badgeText = 'İzin';
+          } else if (isCartLeave) {
+            bgClass =
+              'bg-gradient-to-br from-sky-500 to-blue-600 text-white font-bold border-sky-400 shadow-md shadow-sky-500/30';
+            badgeText = 'Sepet';
           } else if (day.type === 'holiday') {
             bgClass =
               'bg-gradient-to-br from-rose-500 to-red-600 dark:from-rose-600 dark:to-red-700 text-white font-bold border-rose-400 dark:border-rose-500 shadow-md shadow-rose-600/20';
@@ -164,7 +178,7 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           } else if (day.type === 'weekend') {
             bgClass = 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-200 font-semibold border-sky-200 dark:border-sky-800/60';
             badgeText = 'H.Sonu';
-          } else if (inRange) {
+          } else if (inActiveRange) {
             bgClass = 'bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700/60 font-semibold';
           }
 

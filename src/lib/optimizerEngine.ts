@@ -12,12 +12,21 @@ import {
 /**
  * Belirtilen yıl için tüm günleri içeren takvim haritasını oluşturur.
  */
-export function buildYearCalendar(year: number, customHolidays: Holiday[] = []): CalendarDay[] {
+export function buildYearCalendar(
+  year: number,
+  customHolidays: Holiday[] = [],
+  existingSelectedPackages: LeaveOpportunity[] = []
+): CalendarDay[] {
   const days: CalendarDay[] = [];
   const startDate = new Date(year, 0, 1);
   const endDate = new Date(year, 11, 31);
 
   const holidaysForYear = getHolidaysForYear(year, customHolidays);
+  const alreadyTakenLeaveDates = new Set<string>();
+  existingSelectedPackages.forEach((pkg) => {
+    pkg.leaveDates.forEach((d) => alreadyTakenLeaveDates.add(d));
+  });
+
   let currentDate = startDate;
 
   while (currentDate <= endDate) {
@@ -30,7 +39,10 @@ export function buildYearCalendar(year: number, customHolidays: Holiday[] = []):
     let type: DayType = 'work';
     let holidayName: string | undefined = undefined;
 
-    if (holidayMatch) {
+    if (alreadyTakenLeaveDates.has(dateStr)) {
+      type = 'leave';
+      holidayName = 'Seçilen İzin Günü';
+    } else if (holidayMatch) {
       holidayName = holidayMatch.name;
       if (holidayMatch.duration === 0.5) {
         type = 'half-day';
@@ -58,8 +70,9 @@ export function buildYearCalendar(year: number, customHolidays: Holiday[] = []):
 }
 
 /**
- * Ana Optimizasyon Motoru
- * Verilen yıl, bütçe, mod, Cuma kuralı, minimum blok tatil şartı ve özel tatillere göre en avantajlı izin fırsatlarını üretir.
+ * Sıralı Optimizasyon Motoru
+ * Seçili kilitli paketlerden sonra kalan bütçe ve kilitli tarihlerle kalan izin fırsatlarını üretir.
+ * Bir paket seçildiğinde önceliği otomatik olarak Blok İzne (Uzun Kesintisiz Tatil) kaydırır.
  */
 export function calculateLeaveOpportunities(
   year: number,
@@ -68,13 +81,28 @@ export function calculateLeaveOpportunities(
   includeFridayPenalty: boolean = false,
   minBlockEnabled: boolean = false,
   minBlockDays: number = 10,
-  customHolidays: Holiday[] = []
+  customHolidays: Holiday[] = [],
+  existingSelectedPackages: LeaveOpportunity[] = []
 ): LeaveOpportunity[] {
-  if (leaveBudget <= 0) return [];
+  // Seçili paketlerin toplam kullanılan izin maliyeti
+  const usedBudget = existingSelectedPackages.reduce((acc, curr) => acc + curr.leaveDaysRequired, 0);
+  const remainingBudget = Math.max(0, leaveBudget - usedBudget);
 
-  const calendar = buildYearCalendar(year, customHolidays);
+  if (remainingBudget <= 0) return [];
+
+  // Bir paket önceden seçilmişse ve mod 'max-roi' ise kalan bütçe için blok izin önceliği ver
+  const effectiveMode: OptimizationMode =
+    existingSelectedPackages.length > 0 && mode === 'max-roi' ? 'long-block' : mode;
+
+  const calendar = buildYearCalendar(year, customHolidays, existingSelectedPackages);
   const holidaysInYear = getHolidaysForYear(year, customHolidays);
   const rawOpportunities: LeaveOpportunity[] = [];
+
+  // Zaten seçilmiş paketlerin tarih alanları
+  const existingTakenDates = new Set<string>();
+  existingSelectedPackages.forEach((pkg) => {
+    pkg.leaveDates.forEach((d) => existingTakenDates.add(d));
+  });
 
   for (const holiday of holidaysInYear) {
     const holidayIndex = calendar.findIndex((d) => d.date === holiday.date);
@@ -86,6 +114,10 @@ export function calculateLeaveOpportunities(
         const endIndex = Math.min(calendar.length - 1, holidayIndex + rightExpand);
 
         const subCalendar = calendar.slice(startIndex, endIndex + 1);
+
+        // Çakışma kontrolü: Pencere içinde önceden alınmış bir izin tarihi var mı?
+        const overlapsExisting = subCalendar.some((day) => existingTakenDates.has(day.date));
+        if (overlapsExisting) continue;
 
         let leaveDaysRequired = 0;
         let baseLeaveDays = 0;
@@ -122,7 +154,7 @@ export function calculateLeaveOpportunities(
           }
         }
 
-        if (leaveDaysRequired === 0 || leaveDaysRequired > leaveBudget) continue;
+        if (leaveDaysRequired === 0 || leaveDaysRequired > remainingBudget) continue;
 
         const firstDayType = subCalendar[0].type;
         const lastDayType = subCalendar[subCalendar.length - 1].type;
@@ -150,7 +182,9 @@ export function calculateLeaveOpportunities(
         const satisfiesMinBlock = totalOffDays >= minBlockDays;
 
         let scoreReason = '';
-        if (minBlockEnabled && satisfiesMinBlock) {
+        if (existingSelectedPackages.length > 0) {
+          scoreReason = `🧱 Kalan ${remainingBudget} gün izinle öncelikli kesintisiz blok tatil (${totalOffDays} gün tatil)!`;
+        } else if (minBlockEnabled && satisfiesMinBlock) {
           scoreReason = `🛡️ Minimum ${minBlockDays} gün blok izin kuralına uygun: ${totalOffDays} gün kesintisiz tatil!`;
         } else if (hasFridayPenalty) {
           scoreReason = `⚠️ Cuma kuralı dahil: ${baseLeaveDays} gün ham izin yerine ${leaveDaysRequired} gün izin maliyeti (${efficiencyScore}x ROI).`;
@@ -163,7 +197,7 @@ export function calculateLeaveOpportunities(
         }
 
         rawOpportunities.push({
-          id: `${startDateStr}_${endDateStr}_${mode}_${includeFridayPenalty ? 'fp' : 'norm'}_${minBlockEnabled ? `mb${minBlockDays}` : 'all'}_cust${customHolidays.length}`,
+          id: `${startDateStr}_${endDateStr}_${effectiveMode}_${includeFridayPenalty ? 'fp' : 'norm'}_${minBlockEnabled ? `mb${minBlockDays}` : 'all'}_cust${customHolidays.length}`,
           title,
           startDate: startDateStr,
           endDate: endDateStr,
@@ -179,15 +213,15 @@ export function calculateLeaveOpportunities(
           satisfiesMinBlock,
           minBlockTarget: minBlockDays,
           scoreReason,
-          mode,
+          mode: effectiveMode,
         });
       }
     }
   }
 
-  const uniqueOpportunities = filterOverlappingOpportunities(rawOpportunities, mode);
+  const uniqueOpportunities = filterOverlappingOpportunities(rawOpportunities, effectiveMode);
 
-  return sortOpportunitiesByMode(uniqueOpportunities, mode);
+  return sortOpportunitiesByMode(uniqueOpportunities, effectiveMode);
 }
 
 function filterOverlappingOpportunities(

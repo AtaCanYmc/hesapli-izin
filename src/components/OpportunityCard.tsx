@@ -20,6 +20,7 @@ import {
   Printer,
   Share2,
   MessageCircle,
+  PlusCircle,
 } from 'lucide-react';
 import { LeaveOpportunity } from '../types/holiday';
 import { useLeaveStore } from '../store/useLeaveStore';
@@ -29,6 +30,7 @@ import {
   shareOpportunityWhatsApp,
   shareOpportunityNative,
 } from '../lib/exportUtils';
+import BlockLeaveWarningModal from './BlockLeaveWarningModal';
 
 interface OpportunityCardProps {
   opportunity: LeaveOpportunity;
@@ -41,11 +43,21 @@ export default function OpportunityCard({
   isSelected,
   onSelect,
 }: OpportunityCardProps) {
-  const { pinnedOpportunities, togglePinOpportunity, minBlockEnabled } = useLeaveStore();
+  const {
+    pinnedOpportunities,
+    togglePinOpportunity,
+    minBlockEnabled,
+    selectedPackages,
+    addPackageToPlan,
+    removePackageFromPlan,
+  } = useLeaveStore();
+
   const [copied, setCopied] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   const isPinned = pinnedOpportunities.includes(opportunity.id);
+  const isAddedToCart = selectedPackages.some((p) => p.id === opportunity.id);
 
   const formattedStart = format(parseISO(opportunity.startDate), 'd MMMM yyyy (EEEE)', { locale: tr });
   const formattedEnd = format(parseISO(opportunity.endDate), 'd MMMM yyyy (EEEE)', { locale: tr });
@@ -53,6 +65,26 @@ export default function OpportunityCard({
   const formattedLeaveDates = opportunity.leaveDates.map((d) =>
     format(parseISO(d), 'd MMMM (EEE)', { locale: tr })
   );
+
+  const handleToggleCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isAddedToCart) {
+      removePackageFromPlan(opportunity.id);
+    } else {
+      // Sepet boşken ilk paket olarak 7 günden kısa (blok olmayan) paket eklenmeye çalışılırsa uyarı ver
+      const isShortNonBlockPackage = opportunity.totalOffDays < 7;
+      if (selectedPackages.length === 0 && isShortNonBlockPackage) {
+        setShowWarningModal(true);
+      } else {
+        addPackageToPlan(opportunity);
+      }
+    }
+  };
+
+  const handleConfirmAddAnyway = () => {
+    addPackageToPlan(opportunity);
+    setShowWarningModal(false);
+  };
 
   const handleCopySchedule = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -88,219 +120,252 @@ export default function OpportunityCard({
   };
 
   return (
-    <div
-      onClick={onSelect}
-      className={`relative group rounded-3xl p-6 transition-all duration-300 cursor-pointer border ${
-        isSelected
-          ? 'bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-sky-950/80 border-sky-500 shadow-xl shadow-sky-500/10 ring-2 ring-sky-500/30 -translate-y-1'
-          : 'bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/90 shadow-sm hover:shadow-md hover:-translate-y-0.5'
-      }`}
-    >
-      {/* Top Banner Row */}
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            {/* Efficiency score badge */}
-            <span className="px-3 py-1 bg-gradient-to-r from-sky-500 to-emerald-500 text-slate-950 font-black text-xs sm:text-sm rounded-full shadow-md shadow-sky-500/20 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 fill-current" />
-              {opportunity.efficiencyScore}x Verimlilik
-            </span>
-
-            {/* Min Block Requirement Badge */}
-            {minBlockEnabled && opportunity.satisfiesMinBlock && (
-              <span className="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                Min. {opportunity.minBlockTarget} Gün Blok
+    <>
+      <div
+        onClick={onSelect}
+        className={`relative group rounded-3xl p-6 transition-all duration-300 cursor-pointer border ${
+          isAddedToCart
+            ? 'bg-gradient-to-br from-sky-50 to-emerald-50 dark:from-sky-950/60 dark:to-slate-900 border-emerald-500 shadow-xl ring-2 ring-emerald-500/30'
+            : isSelected
+            ? 'bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-sky-950/80 border-sky-500 shadow-xl shadow-sky-500/10 ring-2 ring-sky-500/30 -translate-y-1'
+            : 'bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/90 shadow-sm hover:shadow-md hover:-translate-y-0.5'
+        }`}
+      >
+        {/* Top Banner Row */}
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              {/* Efficiency score badge */}
+              <span className="px-3 py-1 bg-gradient-to-r from-sky-500 to-emerald-500 text-slate-950 font-black text-xs sm:text-sm rounded-full shadow-md shadow-sky-500/20 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 fill-current" />
+                {opportunity.efficiencyScore}x Verimlilik
               </span>
-            )}
 
-            {/* Half day highlight */}
-            {opportunity.halfDaysCount > 0 && (
-              <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
-                <Zap className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                {opportunity.halfDaysCount} Arefe (0.5 Gün)
-              </span>
-            )}
+              {/* Min Block Requirement Badge */}
+              {minBlockEnabled && opportunity.satisfiesMinBlock && (
+                <span className="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  Min. {opportunity.minBlockTarget} Gün Blok
+                </span>
+              )}
 
-            {/* Friday Penalty Highlight */}
-            {opportunity.hasFridayPenalty && (
-              <span className="px-2.5 py-0.5 bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3 text-orange-600 dark:text-orange-400" />
-                Cuma Kuralı (+{opportunity.fridayPenaltyCount} İzin)
-              </span>
-            )}
+              {/* Half day highlight */}
+              {opportunity.halfDaysCount > 0 && (
+                <span className="px-2.5 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                  {opportunity.halfDaysCount} Arefe (0.5 Gün)
+                </span>
+              )}
+
+              {/* Friday Penalty Highlight */}
+              {opportunity.hasFridayPenalty && (
+                <span className="px-2.5 py-0.5 bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border border-orange-300 dark:border-orange-700/60 text-xs font-semibold rounded-full flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3 text-orange-600 dark:text-orange-400" />
+                  Cuma Kuralı (+{opportunity.fridayPenaltyCount} İzin)
+                </span>
+              )}
+            </div>
+
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-300 transition-colors">
+              {opportunity.title}
+            </h3>
           </div>
 
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-300 transition-colors">
-            {opportunity.title}
-          </h3>
-        </div>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-1.5 relative">
+            {/* Add to Annual Plan Button */}
+            <button
+              onClick={handleToggleCart}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
+                isAddedToCart
+                  ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/20'
+                  : 'bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white'
+              }`}
+            >
+              {isAddedToCart ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Planınızda Ekli</span>
+                </>
+              ) : (
+                <>
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Planıma Ekle</span>
+                </>
+              )}
+            </button>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1.5 relative">
-          {/* Share & Download Menu Button */}
-          <div className="relative">
+            {/* Share & Download Menu Button */}
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowExportMenu(!showExportMenu);
+                }}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+                title="Planı Paylaş veya İndir"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showExportMenu && (
+                <div className="absolute right-0 top-10 z-30 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-1.5 space-y-1">
+                  <button
+                    onClick={handleWhatsAppShare}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 rounded-xl flex items-center gap-2"
+                  >
+                    <MessageCircle className="w-4 h-4 text-emerald-500" />
+                    <span>WhatsApp'ta Paylaş</span>
+                  </button>
+                  <button
+                    onClick={handleNativeShare}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 hover:text-sky-600 rounded-xl flex items-center gap-2"
+                  >
+                    <Share2 className="w-4 h-4 text-sky-500" />
+                    <span>Sistem Paylaşım Menüsü</span>
+                  </button>
+                  <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
+                  <button
+                    onClick={handleDownloadIcs}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                  >
+                    <CalendarIcon className="w-4 h-4 text-indigo-500" />
+                    <span>Takvime Ekle (.ics)</span>
+                  </button>
+                  <button
+                    onClick={handlePrintPdf}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                  >
+                    <Printer className="w-4 h-4 text-purple-500" />
+                    <span>PDF / HR Dilekçe</span>
+                  </button>
+                  <button
+                    onClick={handleCopySchedule}
+                    className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                  >
+                    <Copy className="w-4 h-4 text-amber-500" />
+                    <span>Metni Kopyala</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Pin Button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setShowExportMenu(!showExportMenu);
+                togglePinOpportunity(opportunity.id);
               }}
-              className="px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900 transition-all flex items-center gap-1.5 text-xs font-bold"
-              title="Planı Paylaş veya İndir"
+              className={`p-2 rounded-xl border transition-all ${
+                isPinned
+                  ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400'
+                  : 'bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title={isPinned ? 'Planı Kaldır' : 'Planı Kaydet'}
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Paylaş / İndir</span>
+              {isPinned ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
             </button>
+          </div>
+        </div>
 
-            {/* Dropdown Menu */}
-            {showExportMenu && (
-              <div className="absolute right-0 top-10 z-30 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-1.5 space-y-1">
-                <button
-                  onClick={handleWhatsAppShare}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-600 rounded-xl flex items-center gap-2"
-                >
-                  <MessageCircle className="w-4 h-4 text-emerald-500" />
-                  <span>WhatsApp'ta Paylaş</span>
-                </button>
-                <button
-                  onClick={handleNativeShare}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-sky-50 dark:hover:bg-sky-950/50 hover:text-sky-600 rounded-xl flex items-center gap-2"
-                >
-                  <Share2 className="w-4 h-4 text-sky-500" />
-                  <span>Sistem Paylaşım Menüsü</span>
-                </button>
-                <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
-                <button
-                  onClick={handleDownloadIcs}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
-                >
-                  <CalendarIcon className="w-4 h-4 text-indigo-500" />
-                  <span>Takvime Ekle (.ics)</span>
-                </button>
-                <button
-                  onClick={handlePrintPdf}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
-                >
-                  <Printer className="w-4 h-4 text-purple-500" />
-                  <span>PDF / HR Dilekçe</span>
-                </button>
-                <button
-                  onClick={handleCopySchedule}
-                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
-                >
-                  <Copy className="w-4 h-4 text-amber-500" />
-                  <span>Metni Kopyala</span>
-                </button>
-              </div>
-            )}
+        {/* Key Numbers Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-4 bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800/50">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <CalendarIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
+                Kesintisiz Tatil
+              </span>
+              <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
+                {opportunity.totalOffDays} GÜN
+              </span>
+            </div>
           </div>
 
-          {/* Pin Button */}
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 flex items-center justify-center text-sky-600 dark:text-sky-400">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
+                İzin Maliyeti
+              </span>
+              <div className="flex items-baseline space-x-1">
+                <span className="text-lg font-extrabold text-sky-600 dark:text-sky-300">
+                  {opportunity.leaveDaysRequired} GÜN
+                </span>
+                {opportunity.hasFridayPenalty && (
+                  <span className="text-[10px] text-slate-400 line-through">
+                    ({opportunity.baseLeaveDays} gün)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Holidays Included Pills */}
+        {opportunity.holidaysIncluded.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Bayramlar:</span>
+            {opportunity.holidaysIncluded.map((h, i) => (
+              <span
+                key={i}
+                className="text-xs px-2.5 py-0.5 bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 rounded-lg font-medium"
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Leave Dates breakdown */}
+        <div className="mb-4">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">
+            Alınması Gereken İzin Günleri:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {formattedLeaveDates.map((dateStr, idx) => (
+              <span
+                key={idx}
+                className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-sky-700 dark:text-sky-200 text-xs rounded-lg font-mono border border-slate-200 dark:border-slate-700/80"
+              >
+                {dateStr}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Reason & Select CTA */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+          <p className="text-xs text-slate-600 dark:text-slate-300 font-medium italic truncate max-w-[70%]">
+            {opportunity.scoreReason}
+          </p>
+
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePinOpportunity(opportunity.id);
-            }}
-            className={`p-2 rounded-xl border transition-all ${
-              isPinned
-                ? 'bg-amber-100 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400'
-                : 'bg-slate-100 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+              isSelected
+                ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:text-slate-900 dark:group-hover:text-white'
             }`}
-            title={isPinned ? 'Planı Kaldır' : 'Planı Kaydet'}
           >
-            {isPinned ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+            <Eye className="w-3.5 h-3.5" />
+            <span>{isSelected ? 'Takvimde İnceleniyor' : 'Takvimde Gör'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Key Numbers Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-4 bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800/50">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <CalendarIcon className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
-              Kesintisiz Tatil
-            </span>
-            <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">
-              {opportunity.totalOffDays} GÜN
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 flex items-center justify-center text-sky-600 dark:text-sky-400">
-            <Clock className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
-              İzin Maliyeti
-            </span>
-            <div className="flex items-baseline space-x-1">
-              <span className="text-lg font-extrabold text-sky-600 dark:text-sky-300">
-                {opportunity.leaveDaysRequired} GÜN
-              </span>
-              {opportunity.hasFridayPenalty && (
-                <span className="text-[10px] text-slate-400 line-through">
-                  ({opportunity.baseLeaveDays} gün)
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Holidays Included Pills */}
-      {opportunity.holidaysIncluded.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-1.5">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Bayramlar:</span>
-          {opportunity.holidaysIncluded.map((h, i) => (
-            <span
-              key={i}
-              className="text-xs px-2.5 py-0.5 bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50 rounded-lg font-medium"
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Leave Dates breakdown */}
-      <div className="mb-4">
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-1.5">
-          Alınması Gereken İzin Günleri:
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {formattedLeaveDates.map((dateStr, idx) => (
-            <span
-              key={idx}
-              className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-sky-700 dark:text-sky-200 text-xs rounded-lg font-mono border border-slate-200 dark:border-slate-700/80"
-            >
-              {dateStr}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom Reason & Select CTA */}
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
-        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium italic truncate max-w-[70%]">
-          {opportunity.scoreReason}
-        </p>
-
-        <button
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
-            isSelected
-              ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:text-slate-900 dark:group-hover:text-white'
-          }`}
-        >
-          <Eye className="w-3.5 h-3.5" />
-          <span>{isSelected ? 'Takvimde İnceleniyor' : 'Takvimde Gör'}</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
+      {/* Warning Modal for empty cart non-block add attempt */}
+      <BlockLeaveWarningModal
+        isOpen={showWarningModal}
+        opportunity={opportunity}
+        onClose={() => setShowWarningModal(false)}
+        onConfirmAddAnyway={handleConfirmAddAnyway}
+      />
+    </>
   );
 }

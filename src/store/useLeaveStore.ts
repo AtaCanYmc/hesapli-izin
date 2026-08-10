@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Holiday, OptimizationMode } from '../types/holiday';
+import { Holiday, LeaveOpportunity, OptimizationMode } from '../types/holiday';
 
 interface LeaveStoreState {
   leaveBudget: number;
@@ -12,7 +12,8 @@ interface LeaveStoreState {
   theme: 'dark' | 'light';
   selectedOpportunityId: string | null;
   pinnedOpportunities: string[];
-  customHolidays: Holiday[]; // Kullanıcı tarafından eklenen özel / idari tatiller
+  customHolidays: Holiday[];
+  selectedPackages: LeaveOpportunity[]; // Yıllık izin sepetine eklenen kilitli paketler
   
   // Actions
   setLeaveBudget: (budget: number) => void;
@@ -30,6 +31,9 @@ interface LeaveStoreState {
   addCustomHoliday: (holiday: Omit<Holiday, 'id'>) => void;
   removeCustomHoliday: (id: string) => void;
   clearCustomHolidays: () => void;
+  addPackageToPlan: (opportunity: LeaveOpportunity) => void;
+  removePackageFromPlan: (opportunityId: string) => void;
+  clearPlan: () => void;
   resetAll: () => void;
 }
 
@@ -46,9 +50,10 @@ export const useLeaveStore = create<LeaveStoreState>()(
       selectedOpportunityId: null,
       pinnedOpportunities: [],
       customHolidays: [],
+      selectedPackages: [],
 
       setLeaveBudget: (budget) => set({ leaveBudget: Math.max(1, Math.min(30, budget)) }),
-      setSelectedYear: (year) => set({ selectedYear: Math.max(2026, Math.min(2050, year)), selectedOpportunityId: null }),
+      setSelectedYear: (year) => set({ selectedYear: Math.max(2026, Math.min(2050, year)), selectedOpportunityId: null, selectedPackages: [] }),
       setAlgorithmMode: (mode) => set({ algorithmMode: mode }),
       toggleFridayPenalty: () => set((state) => ({ includeFridayPenalty: !state.includeFridayPenalty })),
       setIncludeFridayPenalty: (enabled) => set({ includeFridayPenalty: enabled }),
@@ -85,6 +90,22 @@ export const useLeaveStore = create<LeaveStoreState>()(
 
       clearCustomHolidays: () => set({ customHolidays: [] }),
 
+      addPackageToPlan: (opportunity) =>
+        set((state) => {
+          const exists = state.selectedPackages.some((p) => p.id === opportunity.id);
+          if (exists) return state;
+          return {
+            selectedPackages: [...state.selectedPackages, opportunity],
+          };
+        }),
+
+      removePackageFromPlan: (id) =>
+        set((state) => ({
+          selectedPackages: state.selectedPackages.filter((p) => p.id !== id),
+        })),
+
+      clearPlan: () => set({ selectedPackages: [] }),
+
       resetAll: () =>
         set({
           leaveBudget: 5,
@@ -97,6 +118,7 @@ export const useLeaveStore = create<LeaveStoreState>()(
           selectedOpportunityId: null,
           pinnedOpportunities: [],
           customHolidays: [],
+          selectedPackages: [],
         }),
     }),
     {
