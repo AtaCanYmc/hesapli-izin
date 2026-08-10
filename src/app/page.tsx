@@ -8,7 +8,8 @@ import OpportunityCard from '../components/OpportunityCard';
 import CalendarView from '../components/CalendarView';
 import { calculateLeaveOpportunities } from '../lib/optimizerEngine';
 import { useLeaveStore } from '../store/useLeaveStore';
-import { Sparkles, ShieldCheck, Heart, Bookmark, ListFilter } from 'lucide-react';
+import { downloadCsvExport } from '../lib/exportUtils';
+import { Sparkles, ShieldCheck, Heart, Bookmark, ListFilter, FileSpreadsheet } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -39,6 +40,10 @@ export default function Home() {
     const match = opportunities.find((o) => o.id === selectedOpportunityId);
     return match || opportunities[0];
   }, [opportunities, selectedOpportunityId]);
+
+  const handleExportAllCsv = () => {
+    downloadCsvExport(opportunities, selectedYear);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -73,7 +78,7 @@ export default function Home() {
           
           {/* Opportunities Column (7 cols) */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <ListFilter className="w-5 h-5 text-sky-600 dark:text-sky-400" />
@@ -91,11 +96,25 @@ export default function Home() {
                 </p>
               </div>
 
-              {pinnedOpportunities.length > 0 && (
-                <span className="text-xs font-semibold px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60 rounded-full flex items-center gap-1">
-                  <Bookmark className="w-3 h-3 fill-current" /> {pinnedOpportunities.length} Kaydedildi
-                </span>
-              )}
+              {/* Action Buttons: Pin Badge & Export All CSV */}
+              <div className="flex items-center gap-2">
+                {pinnedOpportunities.length > 0 && (
+                  <span className="text-xs font-semibold px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60 rounded-full flex items-center gap-1">
+                    <Bookmark className="w-3 h-3 fill-current" /> {pinnedOpportunities.length} Kaydedildi
+                  </span>
+                )}
+
+                {opportunities.length > 0 && (
+                  <button
+                    onClick={handleExportAllCsv}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 transition-all text-xs font-bold flex items-center gap-1.5"
+                    title="Tüm Hesaplamaları Excel/CSV Formatında İndir"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>CSV / Excel</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* List of Opportunity Cards */}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   Zap,
   Bookmark,
@@ -16,9 +16,13 @@ import {
   Sparkles,
   AlertTriangle,
   ShieldCheck,
+  Download,
+  Printer,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { LeaveOpportunity } from '../types/holiday';
 import { useLeaveStore } from '../store/useLeaveStore';
+import { downloadIcsFile, triggerPdfPrint } from '../lib/exportUtils';
 
 interface OpportunityCardProps {
   opportunity: LeaveOpportunity;
@@ -33,6 +37,7 @@ export default function OpportunityCard({
 }: OpportunityCardProps) {
   const { pinnedOpportunities, togglePinOpportunity, minBlockEnabled } = useLeaveStore();
   const [copied, setCopied] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   const isPinned = pinnedOpportunities.includes(opportunity.id);
 
@@ -49,6 +54,18 @@ export default function OpportunityCard({
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadIcs = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    downloadIcsFile(opportunity);
+    setShowExportMenu(false);
+  };
+
+  const handlePrintPdf = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    triggerPdfPrint(opportunity);
+    setShowExportMenu(false);
   };
 
   return (
@@ -101,7 +118,49 @@ export default function OpportunityCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 relative">
+          {/* Download / Export Menu Toggle */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowExportMenu(!showExportMenu);
+              }}
+              className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800/50 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900 transition-all flex items-center gap-1 text-xs font-bold"
+              title="Planı İndir / Dışa Aktar"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">İndir</span>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showExportMenu && (
+              <div className="absolute right-0 top-10 z-30 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 space-y-1">
+                <button
+                  onClick={handleDownloadIcs}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                >
+                  <CalendarIcon className="w-4 h-4 text-sky-500" />
+                  <span>Takvime Ekle (.ics)</span>
+                </button>
+                <button
+                  onClick={handlePrintPdf}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                >
+                  <Printer className="w-4 h-4 text-emerald-500" />
+                  <span>PDF / HR Dilekçe</span>
+                </button>
+                <button
+                  onClick={handleCopySchedule}
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-2"
+                >
+                  <Copy className="w-4 h-4 text-amber-500" />
+                  <span>Metin Olarak Kopyala</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -116,14 +175,6 @@ export default function OpportunityCard({
           >
             {isPinned ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
           </button>
-
-          <button
-            onClick={handleCopySchedule}
-            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
-            title="Planı Kopyala"
-          >
-            {copied ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
-          </button>
         </div>
       </div>
 
@@ -131,7 +182,7 @@ export default function OpportunityCard({
       <div className="grid grid-cols-2 gap-3 mb-4 bg-slate-50 dark:bg-slate-950/50 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800/50">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-            <Calendar className="w-5 h-5" />
+            <CalendarIcon className="w-5 h-5" />
           </div>
           <div>
             <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block uppercase">
