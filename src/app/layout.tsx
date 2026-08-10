@@ -5,10 +5,10 @@ export const metadata: Metadata = {
   title: 'Hesaplı İzin | Türkiye Yıllık İzin Optimizasyon PWA',
   description:
     'Resmî tatilleri ve hafta sonlarını yıllık izinlerinizle birleştirerek maksimum kesintisiz tatil günü elde etmenizi sağlayan offline-first PWA uygulaması.',
-  manifest: '/manifest.json',
+  manifest: './manifest.json',
   icons: {
-    icon: '/icon.svg',
-    apple: '/icon.svg',
+    icon: './icon.svg',
+    apple: './icon.svg',
   },
   keywords: [
     'yıllık izin optimizasyonu',
@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="tr" className="dark">
       <head>
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="./icon.svg" type="image/svg+xml" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
