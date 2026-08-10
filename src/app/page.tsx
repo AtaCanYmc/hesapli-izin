@@ -9,7 +9,7 @@ import CalendarView from '../components/CalendarView';
 import { calculateLeaveOpportunities } from '../lib/optimizerEngine';
 import { useLeaveStore } from '../store/useLeaveStore';
 import { downloadCsvExport } from '../lib/exportUtils';
-import { Sparkles, ShieldCheck, Heart, Bookmark, ListFilter, FileSpreadsheet } from 'lucide-react';
+import { Sparkles, ShieldCheck, Heart, Bookmark, ListFilter, FileSpreadsheet, Building2 } from 'lucide-react';
 
 export default function Home() {
   const {
@@ -19,6 +19,7 @@ export default function Home() {
     includeFridayPenalty,
     minBlockEnabled,
     minBlockDays,
+    customHolidays,
     selectedOpportunityId,
     setSelectedOpportunityId,
     pinnedOpportunities,
@@ -31,9 +32,10 @@ export default function Home() {
       algorithmMode,
       includeFridayPenalty,
       minBlockEnabled,
-      minBlockDays
+      minBlockDays,
+      customHolidays
     );
-  }, [selectedYear, leaveBudget, algorithmMode, includeFridayPenalty, minBlockEnabled, minBlockDays]);
+  }, [selectedYear, leaveBudget, algorithmMode, includeFridayPenalty, minBlockEnabled, minBlockDays, customHolidays]);
 
   const currentSelectedOpportunity = useMemo(() => {
     if (opportunities.length === 0) return null;
@@ -44,6 +46,8 @@ export default function Home() {
   const handleExportAllCsv = () => {
     downloadCsvExport(opportunities, selectedYear);
   };
+
+  const customHolidaysThisYear = customHolidays.filter((h) => h.date.startsWith(`${selectedYear}`));
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
@@ -87,6 +91,11 @@ export default function Home() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   {selectedYear} yılı için {leaveBudget} gün izin bütçenizle toplam{' '}
                   <span className="text-sky-600 dark:text-sky-300 font-bold">{opportunities.length}</span> fırsat bulundu.
+                  {customHolidaysThisYear.length > 0 && (
+                    <span className="ml-1 text-purple-600 dark:text-purple-400 font-semibold flex-inline items-center gap-1">
+                      <Building2 className="w-3 h-3 inline" /> ({customHolidaysThisYear.length} Özel Tatil Ekli)
+                    </span>
+                  )}
                   {minBlockEnabled && (
                     <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-semibold">(Min. {minBlockDays} Gün Kesintisiz Şartı Aktif)</span>
                   )}

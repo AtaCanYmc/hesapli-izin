@@ -1,8 +1,10 @@
 'use client';
 
-import { TrendingUp, CalendarDays, Zap, AlertTriangle, Layers } from 'lucide-react';
+import { useState } from 'react';
+import { TrendingUp, CalendarDays, Zap, AlertTriangle, Layers, Building2, Plus } from 'lucide-react';
 import { useLeaveStore } from '../store/useLeaveStore';
 import { OptimizationMode } from '../types/holiday';
+import CustomHolidayModal from './CustomHolidayModal';
 
 const ALGORITHM_OPTIONS: {
   id: OptimizationMode;
@@ -54,7 +56,12 @@ export default function ControlsSection() {
     toggleMinBlockEnabled,
     minBlockDays,
     setMinBlockDays,
+    customHolidays,
   } = useLeaveStore();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const currentYearCustomCount = customHolidays.filter((h) => h.date.startsWith(`${selectedYear}`)).length;
 
   return (
     <section className="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl dark:shadow-2xl backdrop-blur-xl mb-8 space-y-6 transition-colors duration-300">
@@ -175,8 +182,8 @@ export default function ControlsSection() {
 
       </div>
 
-      {/* Special Corporate Rules Section */}
-      <div className="pt-5 border-t border-slate-200 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Special Corporate Rules & Custom Holidays Section */}
+      <div className="pt-5 border-t border-slate-200 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-3 gap-4">
         
         {/* Rule 1: Friday Penalty */}
         <div className="flex items-start justify-between gap-3 bg-slate-50 dark:bg-slate-950/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/50">
@@ -215,9 +222,6 @@ export default function ControlsSection() {
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   Min. Blok İzin Şartı
-                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
-                    İş Kanunu m.56
-                  </span>
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   İznin bir parçası en az {minBlockDays} gün kesintisiz blok olmalıdır.
@@ -236,10 +240,9 @@ export default function ControlsSection() {
             </label>
           </div>
 
-          {/* Sub-selector for min block days */}
           {minBlockEnabled && (
             <div className="pt-2 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Min. Kesintisiz Tatil:</span>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Hedef Blok:</span>
               <div className="flex gap-1.5">
                 {MIN_BLOCK_OPTIONS.map((days) => (
                   <button
@@ -259,7 +262,40 @@ export default function ControlsSection() {
           )}
         </div>
 
+        {/* Feature 3: Custom & Administrative Holiday Creator */}
+        <div className="flex flex-col justify-between p-4 bg-purple-50/50 dark:bg-purple-950/20 rounded-2xl border border-purple-200 dark:border-purple-800/40">
+          <div className="flex items-start space-x-3">
+            <div className="p-2.5 bg-purple-100 dark:bg-purple-950/80 border border-purple-300 dark:border-purple-700/60 rounded-xl text-purple-700 dark:text-purple-300 shrink-0">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                Özel / İdari Tatil Ekle
+                {currentYearCustomCount > 0 && (
+                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-purple-600 text-white rounded-full">
+                    {currentYearCustomCount} Eklendi
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Şirket izni veya idari izin günlerinizi ekleyip hesaplamaya dahil edin.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="mt-3 w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Özel Tatil Yönetimi</span>
+          </button>
+        </div>
+
       </div>
+
+      {/* Modal */}
+      <CustomHolidayModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 }

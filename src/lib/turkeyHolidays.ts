@@ -1,10 +1,9 @@
 import { addDays, format, parseISO } from 'date-fns';
 import { Holiday } from '../types/holiday';
 
-// 2026 - 2050 Yılları Dini Bayramlar Haritası (Ramazan Arefe ve Kurban Arefe Başlangıç Tarihleri)
 interface ReligiousHolidayEntry {
-  ramazanArefe: string[]; // YYYY-MM-DD (Bir yılda 2 Ramazan denk gelebilen yıllar için dizi)
-  kurbanArefe: string[]; // YYYY-MM-DD (Bir yılda 2 Kurban denk gelebilen yıllar için dizi)
+  ramazanArefe: string[];
+  kurbanArefe: string[];
 }
 
 const RELIGIOUS_HOLIDAYS_MAP: Record<number, ReligiousHolidayEntry> = {
@@ -36,9 +35,9 @@ const RELIGIOUS_HOLIDAYS_MAP: Record<number, ReligiousHolidayEntry> = {
 };
 
 /**
- * Belirtilen Yıl (2026 - 2050) İçin Tüm Resmî ve Dinî Tatilleri Dinamik Üretir.
+ * Belirtilen Yıl İçin Tüm Resmî ve Kullanıcının Eklediği Özel Tatilleri Birleştirir.
  */
-export function getHolidaysForYear(year: number): Holiday[] {
+export function getHolidaysForYear(year: number, customHolidays: Holiday[] = []): Holiday[] {
   const holidays: Holiday[] = [];
 
   // 1. Sabit Millî Tatiller (Miladi Takvim)
@@ -112,7 +111,6 @@ export function getHolidaysForYear(year: number): Holiday[] {
   // 2. Dinî Bayramlar (Hicri Takvim Kayması)
   const relEntry = RELIGIOUS_HOLIDAYS_MAP[year];
   if (relEntry) {
-    // Ramazan Bayramı (Arefe 0.5 + 3 gün)
     relEntry.ramazanArefe.forEach((arefeDateStr, idx) => {
       const arefeDate = parseISO(arefeDateStr);
       holidays.push({
@@ -138,7 +136,6 @@ export function getHolidaysForYear(year: number): Holiday[] {
       }
     });
 
-    // Kurban Bayramı (Arefe 0.5 + 4 gün)
     relEntry.kurbanArefe.forEach((arefeDateStr, idx) => {
       const arefeDate = parseISO(arefeDateStr);
       holidays.push({
@@ -165,9 +162,19 @@ export function getHolidaysForYear(year: number): Holiday[] {
     });
   }
 
-  // Tarihe göre sırala
+  // 3. Kullanıcı Tarafından Eklenen Özel / İdari Tatiller
+  const userCustomHolidaysForYear = customHolidays.filter((h) => h.date.startsWith(`${year}`));
+  for (const customH of userCustomHolidaysForYear) {
+    // Şayet aynı tarihte varsayılan tatil varsa ez, yoksa ekle
+    const existingIndex = holidays.findIndex((h) => h.date === customH.date);
+    if (existingIndex !== -1) {
+      holidays[existingIndex] = customH;
+    } else {
+      holidays.push(customH);
+    }
+  }
+
   return holidays.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// 2026 - 2050 Yılları Listesi
 export const SUPPORTED_YEARS = Array.from({ length: 2050 - 2026 + 1 }, (_, i) => 2026 + i);

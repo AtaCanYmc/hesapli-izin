@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { OptimizationMode } from '../types/holiday';
+import { Holiday, OptimizationMode } from '../types/holiday';
 
 interface LeaveStoreState {
   leaveBudget: number;
@@ -12,6 +12,7 @@ interface LeaveStoreState {
   theme: 'dark' | 'light';
   selectedOpportunityId: string | null;
   pinnedOpportunities: string[];
+  customHolidays: Holiday[]; // Kullanıcı tarafından eklenen özel / idari tatiller
   
   // Actions
   setLeaveBudget: (budget: number) => void;
@@ -26,6 +27,9 @@ interface LeaveStoreState {
   setTheme: (theme: 'dark' | 'light') => void;
   setSelectedOpportunityId: (id: string | null) => void;
   togglePinOpportunity: (id: string) => void;
+  addCustomHoliday: (holiday: Omit<Holiday, 'id'>) => void;
+  removeCustomHoliday: (id: string) => void;
+  clearCustomHolidays: () => void;
   resetAll: () => void;
 }
 
@@ -41,6 +45,7 @@ export const useLeaveStore = create<LeaveStoreState>()(
       theme: 'dark',
       selectedOpportunityId: null,
       pinnedOpportunities: [],
+      customHolidays: [],
 
       setLeaveBudget: (budget) => set({ leaveBudget: Math.max(1, Math.min(30, budget)) }),
       setSelectedYear: (year) => set({ selectedYear: Math.max(2026, Math.min(2050, year)), selectedOpportunityId: null }),
@@ -64,6 +69,22 @@ export const useLeaveStore = create<LeaveStoreState>()(
           };
         }),
 
+      addCustomHoliday: (holidayData) =>
+        set((state) => {
+          const id = `custom-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+          const newHoliday: Holiday = { ...holidayData, id };
+          return {
+            customHolidays: [...state.customHolidays.filter((h) => h.date !== holidayData.date), newHoliday],
+          };
+        }),
+
+      removeCustomHoliday: (id) =>
+        set((state) => ({
+          customHolidays: state.customHolidays.filter((h) => h.id !== id),
+        })),
+
+      clearCustomHolidays: () => set({ customHolidays: [] }),
+
       resetAll: () =>
         set({
           leaveBudget: 5,
@@ -75,6 +96,7 @@ export const useLeaveStore = create<LeaveStoreState>()(
           theme: 'dark',
           selectedOpportunityId: null,
           pinnedOpportunities: [],
+          customHolidays: [],
         }),
     }),
     {

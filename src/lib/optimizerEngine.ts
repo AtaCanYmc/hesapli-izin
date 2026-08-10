@@ -12,12 +12,12 @@ import {
 /**
  * Belirtilen yıl için tüm günleri içeren takvim haritasını oluşturur.
  */
-export function buildYearCalendar(year: number): CalendarDay[] {
+export function buildYearCalendar(year: number, customHolidays: Holiday[] = []): CalendarDay[] {
   const days: CalendarDay[] = [];
-  const startDate = new Date(year, 0, 1); // 1 Ocak
-  const endDate = new Date(year, 11, 31); // 31 Aralık
+  const startDate = new Date(year, 0, 1);
+  const endDate = new Date(year, 11, 31);
 
-  const holidaysForYear = getHolidaysForYear(year);
+  const holidaysForYear = getHolidaysForYear(year, customHolidays);
   let currentDate = startDate;
 
   while (currentDate <= endDate) {
@@ -59,7 +59,7 @@ export function buildYearCalendar(year: number): CalendarDay[] {
 
 /**
  * Ana Optimizasyon Motoru
- * Verilen yıl (2026 - 2050), bütçe, mod, Cuma kuralı ve minimum blok tatil şartına göre en avantajlı izin fırsatlarını üretir.
+ * Verilen yıl, bütçe, mod, Cuma kuralı, minimum blok tatil şartı ve özel tatillere göre en avantajlı izin fırsatlarını üretir.
  */
 export function calculateLeaveOpportunities(
   year: number,
@@ -67,12 +67,13 @@ export function calculateLeaveOpportunities(
   mode: OptimizationMode,
   includeFridayPenalty: boolean = false,
   minBlockEnabled: boolean = false,
-  minBlockDays: number = 10
+  minBlockDays: number = 10,
+  customHolidays: Holiday[] = []
 ): LeaveOpportunity[] {
   if (leaveBudget <= 0) return [];
 
-  const calendar = buildYearCalendar(year);
-  const holidaysInYear = getHolidaysForYear(year);
+  const calendar = buildYearCalendar(year, customHolidays);
+  const holidaysInYear = getHolidaysForYear(year, customHolidays);
   const rawOpportunities: LeaveOpportunity[] = [];
 
   for (const holiday of holidaysInYear) {
@@ -162,7 +163,7 @@ export function calculateLeaveOpportunities(
         }
 
         rawOpportunities.push({
-          id: `${startDateStr}_${endDateStr}_${mode}_${includeFridayPenalty ? 'fp' : 'norm'}_${minBlockEnabled ? `mb${minBlockDays}` : 'all'}`,
+          id: `${startDateStr}_${endDateStr}_${mode}_${includeFridayPenalty ? 'fp' : 'norm'}_${minBlockEnabled ? `mb${minBlockDays}` : 'all'}_cust${customHolidays.length}`,
           title,
           startDate: startDateStr,
           endDate: endDateStr,
