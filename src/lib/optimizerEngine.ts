@@ -72,7 +72,8 @@ export function buildYearCalendar(
 /**
  * Sıralı Optimizasyon Motoru
  * Seçili kilitli paketlerden sonra kalan bütçe ve kilitli tarihlerle kalan izin fırsatlarını üretir.
- * Bir paket seçildiğinde önceliği otomatik olarak Blok İzne (Uzun Kesintisiz Tatil) kaydırır.
+ * Eğer kilitlenen paketlerden biri blok izin şartını (en az minBlockDays veya 7 gün) sağladıysa,
+ * kalan bütçedeki önerilerde blok zorunluluğu kalkar ve kullanıcının seçtiği optimizasyon modu korunur.
  */
 export function calculateLeaveOpportunities(
   year: number,
@@ -90,9 +91,17 @@ export function calculateLeaveOpportunities(
 
   if (remainingBudget <= 0) return [];
 
-  // Bir paket önceden seçilmişse ve mod 'max-roi' ise kalan bütçe için blok izin önceliği ver
+  // Sepette kilitlenen izin paketlerinden biri blok izin şartını karşıladı mı?
+  const hasBlockSatisfiedInCart = existingSelectedPackages.some(
+    (pkg) => pkg.totalOffDays >= (minBlockEnabled ? minBlockDays : 7) || pkg.satisfiesMinBlock
+  );
+
+  // Eğer sepette henüz blok izin kilitlenmediyse ve mod 'max-roi' ise kalan bütçeyi öncelikle blok izne yönlendir.
+  // Ancak sepetteki kilitli paketlerden biri ZATEN blok izin şartını sağladıysa kullanıcının seçtiği modu koru.
   const effectiveMode: OptimizationMode =
-    existingSelectedPackages.length > 0 && mode === 'max-roi' ? 'long-block' : mode;
+    existingSelectedPackages.length > 0 && !hasBlockSatisfiedInCart && mode === 'max-roi'
+      ? 'long-block'
+      : mode;
 
   const calendar = buildYearCalendar(year, customHolidays, existingSelectedPackages);
   const holidaysInYear = getHolidaysForYear(year, customHolidays);
@@ -163,7 +172,11 @@ export function calculateLeaveOpportunities(
 
         const totalOffDays = subCalendar.length;
 
-        if (minBlockEnabled && totalOffDays < minBlockDays) continue;
+        // Minimum blok izin şartı aktifse ve sepetteki kilitli paketlerden HİÇBİRİ henüz blok şartını sağlamadıysa,
+        // aday paketin blok şartını (minBlockDays) karşılaması gerekir.
+        // Kilitli paketlerden biri ZATEN blok şartını karşıladıysa kalan izin önerilerinde blok olma zorunluluğu kalkar!
+        const enforceMinBlockOnCandidate = minBlockEnabled && !hasBlockSatisfiedInCart;
+        if (enforceMinBlockOnCandidate && totalOffDays < minBlockDays) continue;
 
         const efficiencyScore = Number((totalOffDays / leaveDaysRequired).toFixed(2));
 
@@ -182,8 +195,10 @@ export function calculateLeaveOpportunities(
         const satisfiesMinBlock = totalOffDays >= minBlockDays;
 
         let scoreReason = '';
-        if (existingSelectedPackages.length > 0) {
+        if (existingSelectedPackages.length > 0 && !hasBlockSatisfiedInCart) {
           scoreReason = `🧱 Kalan ${remainingBudget} gün izinle öncelikli kesintisiz blok tatil (${totalOffDays} gün tatil)!`;
+        } else if (existingSelectedPackages.length > 0 && hasBlockSatisfiedInCart) {
+          scoreReason = `💡 Blok izin şartı sepette sağlandı: Kalan ${remainingBudget} gün izinle ${totalOffDays} gün tatil (${efficiencyScore}x ROI).`;
         } else if (minBlockEnabled && satisfiesMinBlock) {
           scoreReason = `🛡️ Minimum ${minBlockDays} gün blok izin kuralına uygun: ${totalOffDays} gün kesintisiz tatil!`;
         } else if (hasFridayPenalty) {

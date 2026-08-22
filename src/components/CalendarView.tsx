@@ -21,7 +21,7 @@ const MONTH_NAMES = [
   'Haziran',
   'Temmuz',
   'Ağustos',
-  'Eylul',
+  'Eylül',
   'Ekim',
   'Kasım',
   'Aralık',
@@ -63,78 +63,74 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
   const prevMonth = () => setCurrentMonth((prev) => (prev === 0 ? 11 : prev - 1));
 
   return (
-    <div className="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-7 shadow-xl dark:shadow-2xl backdrop-blur-xl transition-colors duration-300">
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 shadow-sm transition-colors">
       {/* Calendar Header & Month Navigation */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 dark:text-sky-400" />
-            İnteraktif Takvim Görünümü
+          <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-zinc-500" />
+            İnteraktif Takvim
           </h2>
-          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {selectedOpportunity
               ? `İncelenen: ${selectedOpportunity.title}`
-              : 'Bir fırsat kartına tıklayarak takvimde görün.'}
+              : 'Seçili fırsatın takvim önizlemesi.'}
           </p>
         </div>
 
-        {/* Month Picker Controls */}
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+        {/* Month Navigation Controls */}
+        <div className="flex items-center space-x-1.5">
           <button
             onClick={prevMonth}
-            className="p-1.5 sm:p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700/60"
+            className="p-1.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700/60 transition-colors"
             title="Önceki Ay"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-3.5 h-3.5" />
           </button>
 
-          <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white px-3 py-1 sm:px-4 sm:py-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700/60 min-w-[110px] sm:min-w-[130px] text-center">
+          <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100 px-3 py-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-md border border-zinc-200 dark:border-zinc-700/60 min-w-[120px] text-center">
             {MONTH_NAMES[currentMonth]} {year}
           </span>
 
           <button
             onClick={nextMonth}
-            className="p-1.5 sm:p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700/60"
+            className="p-1.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700/60 transition-colors"
             title="Sonraki Ay"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Color Legend Bar */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-slate-50 dark:bg-slate-950/60 rounded-2xl border border-slate-200 dark:border-slate-800/60 mb-4 sm:mb-6 text-[11px] sm:text-xs font-medium">
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-          <span className="text-slate-700 dark:text-slate-300">Alınacak İzin</span>
+      <div className="flex flex-wrap items-center gap-3 p-2.5 bg-zinc-50 dark:bg-zinc-950/60 rounded-md border border-zinc-200 dark:border-zinc-800/60 mb-4 text-xs font-medium">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <span className="text-zinc-600 dark:text-zinc-400">İzin</span>
         </div>
         {selectedPackages.length > 0 && (
-          <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded bg-sky-500 shadow-sm shadow-sky-500/50"></span>
-            <span className="text-slate-700 dark:text-slate-300">Sepetteki İzin</span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <span className="text-zinc-600 dark:text-zinc-400">Sepet</span>
           </div>
         )}
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-rose-500 shadow-sm shadow-rose-500/50"></span>
-          <span className="text-slate-700 dark:text-slate-300">Resmî Tatil</span>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+          <span className="text-zinc-600 dark:text-zinc-400">Resmî Tatil</span>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-amber-500 shadow-sm shadow-amber-500/50"></span>
-          <span className="text-slate-700 dark:text-slate-300">Arefe (0.5G)</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700"></span>
-          <span className="text-slate-700 dark:text-slate-300">İş Günü</span>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          <span className="text-zinc-600 dark:text-zinc-400">Arefe</span>
         </div>
       </div>
 
       {/* Grid Header: Weekday Labels */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center mb-1.5">
+      <div className="grid grid-cols-7 gap-1 text-center mb-1">
         {WEEKDAY_SHORT.map((wd, i) => (
           <div
             key={i}
-            className={`text-[11px] sm:text-xs font-bold py-1 uppercase tracking-wider ${
-              i === 0 || i === 6 ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400'
+            className={`text-[11px] font-mono uppercase font-semibold py-1 ${
+              i === 0 || i === 6 ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-500'
             }`}
           >
             {wd}
@@ -143,10 +139,10 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
       </div>
 
       {/* Grid Body: Days */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-2">
+      <div className="grid grid-cols-7 gap-1">
         {/* Empty slots before day 1 */}
         {emptyPrefixSlots.map((_, idx) => (
-          <div key={`empty-${idx}`} className="h-11 sm:h-16 rounded-xl bg-slate-100 dark:bg-slate-950/20 opacity-30" />
+          <div key={`empty-${idx}`} className="h-11 sm:h-14 rounded-md bg-zinc-100/50 dark:bg-zinc-950/20 opacity-30" />
         ))}
 
         {/* Days of month */}
@@ -155,49 +151,49 @@ export default function CalendarView({ year, selectedOpportunity }: CalendarView
           const isLeaveActive = isRecommendedLeaveDate(day.date);
           const isCartLeave = isCartLeaveDate(day.date);
 
-          let bgClass = 'bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800';
+          let bgClass = 'bg-zinc-50 dark:bg-zinc-950/40 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800/80';
           let badgeText = '';
 
           if (isLeaveActive) {
             bgClass =
-              'bg-gradient-to-br from-emerald-500 to-teal-600 text-slate-950 font-black border-emerald-400 shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-400/50 scale-105';
+              'bg-emerald-600 dark:bg-emerald-600 text-white font-bold border-emerald-600 shadow-sm';
             badgeText = 'İzin';
           } else if (isCartLeave) {
             bgClass =
-              'bg-gradient-to-br from-sky-500 to-blue-600 text-white font-bold border-sky-400 shadow-md shadow-sky-500/30';
+              'bg-blue-600 dark:bg-blue-600 text-white font-bold border-blue-600 shadow-sm';
             badgeText = 'Sepet';
           } else if (day.type === 'holiday') {
             bgClass =
-              'bg-gradient-to-br from-rose-500 to-red-600 dark:from-rose-600 dark:to-red-700 text-white font-bold border-rose-400 dark:border-rose-500 shadow-md shadow-rose-600/20';
+              'bg-rose-500/15 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-semibold border-rose-500/30';
             badgeText = 'Tatil';
           } else if (day.type === 'half-day') {
             bgClass =
-              'bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 text-slate-950 font-bold border-amber-400 shadow-md shadow-amber-500/20';
+              'bg-amber-500/15 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-semibold border-amber-500/30';
             badgeText = 'Arefe';
           } else if (day.type === 'weekend') {
-            bgClass = 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-200 font-semibold border-sky-200 dark:border-sky-800/60';
+            bgClass = 'bg-zinc-100 dark:bg-zinc-800/40 text-zinc-600 dark:text-zinc-400 font-medium border-zinc-200 dark:border-zinc-800';
             badgeText = 'H.S';
           } else if (inActiveRange) {
-            bgClass = 'bg-sky-100 dark:bg-sky-900/40 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-700/60 font-semibold';
+            bgClass = 'bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700 font-medium';
           }
 
           return (
             <div
               key={day.date}
-              className={`relative h-11 sm:h-16 p-1 sm:p-2 rounded-xl sm:rounded-2xl border transition-all duration-200 flex flex-col justify-between overflow-hidden ${bgClass}`}
+              className={`relative h-11 sm:h-14 p-1 sm:p-1.5 rounded-md border transition-colors flex flex-col justify-between overflow-hidden ${bgClass}`}
               title={day.holidayName ? `${day.date}: ${day.holidayName}` : day.date}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm font-extrabold">{day.dayNumber}</span>
+                <span className="text-xs font-mono font-bold">{day.dayNumber}</span>
                 {badgeText && (
-                  <span className="text-[8px] sm:text-[10px] px-0.5 py-0.2 rounded font-bold uppercase truncate max-w-[36px] sm:max-w-[45px]">
+                  <span className="text-[9px] font-mono uppercase truncate opacity-90">
                     {badgeText}
                   </span>
                 )}
               </div>
 
               {day.holidayName && (
-                <p className="text-[8px] sm:text-[9px] font-medium leading-tight truncate opacity-90 hidden sm:block">
+                <p className="text-[8px] font-medium leading-tight truncate opacity-80 hidden sm:block">
                   {day.holidayName}
                 </p>
               )}

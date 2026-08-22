@@ -4,11 +4,11 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Hesaplı İzin | Türkiye Yıllık İzin Optimizasyon PWA',
   description:
-    'Resmî tatilleri ve hafta sonlarını yıllık izinlerinizle birleştirerek maksimum kesintisiz tatil günü elde etmenizi sağlayan offline-first PWA uygulaması.',
-  manifest: './manifest.json',
-  icons: {
-    icon: './icon.svg',
-    apple: './icon.svg',
+    'Resmî tatiller ve hafta sonlarını yıllık izinlerinizle birleştirerek maksimum kesintisiz tatil günü elde etmenizi sağlayan offline-first PWA uygulaması.',
+  appleWebApp: {
+    title: 'Hesaplı İzin',
+    capable: true,
+    statusBarStyle: 'black-translucent',
   },
   keywords: [
     'yıllık izin optimizasyonu',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0284c7',
+  themeColor: '#09090b',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -37,11 +37,11 @@ export default function RootLayout({
   return (
     <html lang="tr" className="dark">
       <head>
-        <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+        <meta name="apple-mobile-web-app-title" content="Hesaplı İzin" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="bg-slate-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-slate-950">
+      <body className="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 antialiased font-sans">
         {children}
       </body>
     </html>

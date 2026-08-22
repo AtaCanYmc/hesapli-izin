@@ -8,41 +8,21 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      colors: {
-        brand: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          200: '#bae0fd',
-          300: '#7cc8fc',
-          400: '#36abf7',
-          500: '#0c8ee9',
-          600: '#0070c7',
-          700: '#0159a1',
-          800: '#064c84',
-          900: '#0b3f6f',
-          950: '#07284a',
-        },
-        emerald: {
-          500: '#10b981',
-          600: '#059669',
-        },
-        amber: {
-          500: '#f59e0b',
-          600: '#d97706',
-        },
-        rose: {
-          500: '#f43f5e',
-          600: '#e11d48',
-        }
-      },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          'sans-serif',
+        ],
+        mono: ['SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'bounce-subtle': 'bounce 2s infinite',
-      }
+        'fade-in': 'fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      },
     },
   },
   plugins: [],
-}
+};
