@@ -1,0 +1,52 @@
+name: Bug Report
+description: Report a reproducible calculation defect, layout error, or PWA issue
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please verify the issue has not been reported before opening a ticket.
+        For security reports, refer to [SECURITY.md](../../SECURITY.md).
+  - type: textarea
+    id: summary
+    attributes:
+      label: Defect Summary
+      description: Provide a clear and concise description of the calculation or UI defect.
+      placeholder: Describe the observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps to reproduce the calculation or rendering defect.
+      placeholder: |
+        1. Set target year to '2026'
+        2. Set leave budget to '14' days
+        3. Select optimization mode 'max-roi'
+        4. Observe opportunity list
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What was the mathematically or logically expected schedule?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Browser, operating system, and whether running as an installed PWA.
+      placeholder: Chrome 130 on macOS 15, or iOS 18 Safari PWA
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Verification
+      options:
+        - label: I confirmed this behavior reproduces with default holiday configurations.
+          required: false

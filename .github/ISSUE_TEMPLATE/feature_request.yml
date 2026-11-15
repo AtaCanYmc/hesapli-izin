@@ -1,0 +1,39 @@
+name: Feature Request
+description: Propose an optimization engine enhancement, corporate rule, or export format
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please verify the proposed feature is not already tracked in [ROADMAP.md](../../ROADMAP.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What leave planning limitation or corporate policy does this feature solve?
+      placeholder: Current leave algorithms do not account for...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Explain the mathematical logic, UI adjustment, or export mechanism.
+      placeholder: Introduce a configuration toggle for...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe existing workarounds or alternative algorithms considered.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Contributor Checklist
+      options:
+        - label: I searched existing issues and discussions before submitting this request.
+          required: true
+        - label: The proposed feature maintains 100% client-side privacy without telemetry.
+          required: true

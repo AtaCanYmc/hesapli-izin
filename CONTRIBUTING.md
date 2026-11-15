@@ -1,61 +1,82 @@
 # Contributing to Hesaplı İzin
 
-Thank you for your interest in contributing to **Hesaplı İzin**! We welcome contributions from developers, designers, and testers of all skill levels.
+This repository welcomes contributions to optimize annual leave planning in Turkey. Follow these guidelines to ensure code quality, accurate legal holiday calculations, and client-side privacy.
 
----
+## Code of Conduct
 
-## 📜 Code of Conduct
+All contributors and maintainers must adhere to the [Code of Conduct](CODE_OF_CONDUCT.md). Violations should be reported privately to `atacanymc@gmail.com`.
 
-By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md) at all times.
+## Development Workflow
 
----
+### 1. Prerequisites
 
-## 🛠️ How to Contribute
+- Node.js 18.x, 20.x, or 22.x
+- npm 9.x or higher
 
-### 1. Reporting Bugs
+### 2. Local Setup
 
-If you find a bug or unexpected behavior:
-1. Search existing [GitHub Issues](https://github.com/your-username/hesapli-izin/issues) to ensure it hasn't already been reported.
-2. If not reported, open a new Issue using our **Bug Report** template.
-3. Include clear steps to reproduce, browser version, operating system, and screenshots if applicable.
+Clone the repository and install dependencies:
 
-### 2. Suggesting Features
+```bash
+git clone https://github.com/AtaCanYmc/hesapli-izin.git
+cd hesapli-izin
+npm install
+npm run dev
+```
 
-We welcome new feature ideas!
-1. Check existing issues to see if your idea is already being discussed.
-2. Open a new Issue using our **Feature Request** template.
-3. Explain the problem your feature solves and why it would be beneficial for users in Turkey.
+The development server starts at `http://localhost:3000`.
 
-### 3. Pull Request (PR) Process
+### 3. Branch Naming
 
-1. **Fork the Repository**: Create your own fork of the project.
-2. **Create a Feature Branch**:
-   ```bash
-   git checkout -b feature/my-amazing-feature
-   ```
-3. **Make Your Changes**:
-   - Ensure clean TypeScript code with no explicit `any` types where possible.
-   - Follow standard Tailwind CSS styling patterns.
-   - Maintain strict offline-first client-side execution.
-4. **Test Your Changes**:
-   Run the TypeScript compiler check and build production bundle locally:
-   ```bash
-   npx tsc --noEmit
-   npm run build
-   ```
-5. **Commit Your Changes**:
-   Use descriptive commit messages following Conventional Commits (e.g. `feat: add custom holiday exporter`, `fix: correct Arefe calculation`).
-6. **Submit a Pull Request**:
-   - Push your branch to GitHub and open a PR targeting the `main` branch.
-   - Fill out our PR template thoroughly.
+Create a dedicated branch for each feature or bug fix:
 
----
+- `feature/<short-description>` for new capabilities or algorithms
+- `fix/<short-description>` for holiday corrections or rendering fixes
+- `docs/<short-description>` for documentation changes
+- `chore/<short-description>` for tooling or dependency updates
 
-## 🎨 Code Style Guidelines
+```bash
+git checkout -b feature/ramadan-dates-2030
+```
 
-- **TypeScript**: Use explicit interfaces and types defined in `src/types/holiday.ts`. Avoid unhandled promises or unsafe type assertions.
-- **Components**: Keep React components modular, reusable, and single-purpose in `src/components/`.
-- **Styling**: Use Tailwind CSS classes. Use `dark:` variants for all colors to maintain Dark/Light mode compatibility.
-- **Localization**: User-facing Turkish UI text should be natural and accurate to Turkish corporate/legal terminology. Code documentation and commit messages should be in English.
+### 4. Code Standards
 
-Thank you for helping make leave planning easier for everyone! 🏖️
+- TypeScript: Maintain strict typing. Avoid `any` assertions. Define domain models in `src/types/holiday.ts`.
+- Offline First: All computations must execute in the browser. Do not introduce remote server calls or telemetry.
+- Component Design: Place UI components in `src/components/`. Use Tailwind CSS utility classes with dark mode variants (`dark:`).
+- Turkish Holidays: Verify Islamic and national holiday dates against official Gazete sources before modifying `src/data/holidays.json` or `src/lib/turkeyHolidays.ts`.
+
+### 5. Local Verification
+
+Verify TypeScript compilation and static PWA build before opening a pull request:
+
+```bash
+npx tsc --noEmit
+npm run build
+```
+
+Both commands must exit with code 0.
+
+### 6. Commit Message Convention
+
+Commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```text
+<type>(<optional scope>): <description>
+```
+
+| Type | Purpose | Example |
+| :--- | :--- | :--- |
+| `feat` | New feature or engine algorithm | `feat(engine): add 2-day Friday penalty rule` |
+| `fix` | Bug fix or date correction | `fix(holidays): correct 2028 Kurban Bayram dates` |
+| `docs` | Documentation update | `docs(readme): add architecture flowchart` |
+| `refactor` | Code restructuring without behavior changes | `refactor(cart): simplify leave date deduplication` |
+| `test` | Adding or updating tests | `test(engine): add block leave regression checks` |
+| `chore` | Build, CI, or dependency updates | `chore(deps): update date-fns to 3.6.0` |
+
+### 7. Pull Request Submission
+
+1. Push your branch to GitHub.
+2. Open a Pull Request targeting the `main` branch.
+3. Complete the pull request template with verification commands and technical changes.
+4. Ensure all automated CI checks pass.
